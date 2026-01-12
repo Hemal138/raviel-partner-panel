@@ -1,0 +1,178 @@
+export const STATUS_CONFIG = {
+  Delivered: {
+    label: "Delivered",
+    color: "#E4FFE9",
+    today: 50,
+    total: 500,
+    subDataList: [
+      {
+        key: "DELIVERED",
+        label: "Delivered",
+        today: 5,
+        total: 50,
+        chipColor: "#36C76C",
+      },
+    ],
+  },
+
+  Canceled: {
+    label: "Canceled",
+    color: "#FFD7E1",
+    today: 50,
+    total: 500,
+    subDataList: [
+      {
+        key: "CUSTOMER_CANCELED",
+        label: "Customer canceled",
+        today: 50,
+        total: 500,
+        chipColor: "#FF5C8A",
+      },
+      {
+        key: "AUTO_CANCELED",
+        label: "Auto canceled",
+        today: 20,
+        total: 200,
+        chipColor: "#FF5C8A",
+      },
+      {
+        key: "SELLER_CANCELED",
+        label: "Seller canceled",
+        today: 10,
+        total: 100,
+        chipColor: "#FF5C8A",
+      },
+    ],
+  },
+
+  Return: {
+    label: "Return",
+    color: "#DADAFF",
+    today: 50,
+    total: 500,
+    subDataList: [
+      {
+        key: "RETURNED",
+        label: "Returned",
+        today: 50,
+        total: 500,
+        chipColor: "#635BFF",
+      },
+      {
+        key: "REFUNDED",
+        label: "Refunded",
+        today: 20,
+        total: 200,
+        chipColor: "#635BFF",
+      },
+      {
+        key: "RTO_INITIATED",
+        label: "RTO Initiated",
+        today: 10,
+        total: 100,
+        chipColor: "#635BFF",
+      },
+      {
+        key: "RTO_IN_TRANSIT",
+        label: "RTO In Transit",
+        today: 10,
+        total: 100,
+        chipColor: "#635BFF",
+      },
+      {
+        key: "RTO_COMPLETED",
+        label: "RTO Completed",
+        today: 10,
+        total: 100,
+        chipColor: "#635BFF",
+      },
+    ],
+  },
+
+Movement: {
+  label: "Movement",
+  color: "#FFF6D8",
+  today: 50,
+  total: 500,
+  subDataList: [
+    {
+      key: "RETURN_INITIATED",
+      label: "Return initiated",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "PICKUP_SCHEDULED",
+      label: "Pickup scheduled",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "PICKUP_ATTEMPTED",
+      label: "Pickup attempted",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "PICKED_UP",
+      label: "Picked up",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "IN_TRANSIT_RETURN",
+      label: "In transit (Return)",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "RTO_IN_TRANSIT",
+      label: "RTO in transit",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "RTO_RECEIVED",
+      label: "RTO received",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "QC_IN_PROGRESS",
+      label: "QC in progress",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "QC_FAILED",
+      label: "QC failed",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "RETURN_COMPLETED",
+      label: "Return completed",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+    {
+      key: "REFUND_COMPLETED",
+      label: "Refund completed",
+      today: 5,
+      total: 50,
+      chipColor: "#F8C20A",
+    },
+  ],
+},
+
+};
