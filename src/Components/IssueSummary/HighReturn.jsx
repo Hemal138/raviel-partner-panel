@@ -100,8 +100,7 @@ const HighReturn = () => {
         mb={2}
       >
         <Box sx={{ display: "flex",alignItems:"center",gap:"10px" }}>
-          <Box sx={{ height: "30px", width: "30px", bgcolor: "black",borderRadius:"50%" }}></Box>
-          <Typography fontSize={25} fontWeight={600}>
+          <Typography fontSize={30} fontWeight={600}>
             High Return
           </Typography>
         </Box>
