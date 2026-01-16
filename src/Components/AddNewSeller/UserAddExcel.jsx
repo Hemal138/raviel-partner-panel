@@ -1,12 +1,13 @@
 import { Box, Button, Typography, Paper } from "@mui/material";
 import React, { useState } from "react";
-import axiosInstance from "../../Components/Form/axiosInstance"; // path adjust karjo
+import axiosInstanceForExcel from "../AddNewSeller/axiosInstanceForExcel";
 
 const UserAddExcel = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [inputKey, setInputKey] = useState(Date.now()); // 🔥 important
 
-  // 📂 File select
+  // 📂 Select Excel
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
@@ -14,39 +15,52 @@ const UserAddExcel = () => {
     }
   };
 
-  // 📤 Submit Excel
-const handleSubmit = async () => {
-  if (!file) {
-    alert("Please select an Excel file");
-    return;
-  }
+  // 📥 Download Demo Excel (must be in public/)
+  const handleDemoDownload = () => {
+    const link = document.createElement("a");
+    link.href = "/Seller-add-by-partner-format.xlsx";
+    link.download = "Seller-add-by-partner-format.xlsx";
+    link.click();
+  };
 
-  const formData = new FormData();
-  formData.append("file", file);
+  // 📤 Upload Excel
+  const handleSubmit = async () => {
+    if (!file) {
+      alert("Please select an Excel file");
+      return;
+    }
 
-  try {
-    setLoading(true);
+    /**
+     * 🔥 SAFETY FIX
+     * Clone file to avoid ERR_UPLOAD_FILE_CHANGED
+     */
+    const safeFile = new File([file], file.name, {
+      type: file.type,
+      lastModified: file.lastModified,
+    });
 
-    await axiosInstance.post(
-      "/partner/add-sellers-using-file",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    const formData = new FormData();
+    formData.append("add-sellers-excel-file", safeFile);
 
-    alert("Excel uploaded successfully ✅");
-    setFile(null);
-  } catch (error) {
-    console.error(error);
-    alert("Failed to upload Excel ❌");
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
 
+      await axiosInstanceForExcel.post(
+        "/partner/add-sellers-using-file",
+        formData
+      );
+
+      alert("Excel uploaded successfully ✅");
+      setFile(null);
+      setInputKey(Date.now()); // reset file input
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Failed to upload Excel ❌");
+      setInputKey(Date.now()); // reset even on error
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Paper
@@ -57,14 +71,33 @@ const handleSubmit = async () => {
         textAlign: "center",
       }}
     >
-      <Typography variant="h6" mb={1} fontWeight={600} color="#071B2F">
+      {/* 🔹 Demo Excel */}
+      <Button
+        onClick={handleDemoDownload}
+        sx={{
+          mb: 2,
+          px: 3,
+          py: 1,
+          borderRadius: 2,
+          background: "#E3F2FD",
+          color: "#1565C0",
+          fontWeight: 600,
+          textTransform: "none",
+          "&:hover": { background: "#BBDEFB" },
+        }}
+      >
+        Download Demo Excel
+      </Button>
+
+      <Typography variant="h6" mb={1} fontWeight={600}>
         Upload Seller Excel
       </Typography>
 
       <Typography variant="body2" color="text.secondary" mb={3}>
-        Upload .xlsx or .xls file to add multiple sellers
+        Download demo file, add your data & upload it
       </Typography>
 
+      {/* 📂 Choose Excel */}
       <Button
         component="label"
         sx={{
@@ -78,9 +111,10 @@ const handleSubmit = async () => {
       >
         Choose Excel
         <input
+          key={inputKey}            // 🔥 very important
           hidden
           type="file"
-          accept=".xlsx,.xls"
+          accept=".xlsx,.csv"
           onChange={handleFileChange}
         />
       </Button>
@@ -91,6 +125,7 @@ const handleSubmit = async () => {
         </Typography>
       )}
 
+      {/* 📤 Submit */}
       <Box mt={3}>
         <Button
           disabled={loading}
