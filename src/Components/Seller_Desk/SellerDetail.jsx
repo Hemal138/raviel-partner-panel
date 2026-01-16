@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography, Stack } from "@mui/material";
 
-const SellerDetails = ({ seller }) => {
+const SellerDetail = ({ seller }) => {
   if (!seller) return null;
 
   return (
@@ -49,4 +49,4 @@ const DetailRow = ({ label, value }) => (
   </Stack>
 );
 
-export default SellerDetails;
+export default SellerDetail;

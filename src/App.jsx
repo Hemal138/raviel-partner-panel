@@ -25,6 +25,7 @@ import HighReturn from "./Components/IssueSummary/HighReturn";
 import AddNewSeller from "./Pages/AddNewSeller";
 import OnBoarding from "./Components/Form/OnBoarding";
 import EditProfile from "./Components/Profile/EditProfile";
+import SellerDetail from "./Components/Seller_Desk/SellerDetail";
 
 const App = () => {
   return (
@@ -76,11 +77,15 @@ const App = () => {
           <Route path="profile" element={<Profile />} />
           <Route path="edit-profile" element={<EditProfile />} />
 
+          {/* ✅ Seller Desk */}
+          <Route path="seller_desk/:sellerId" element={<SellerDetail />} />
+
           {/* Issue Summary */}
           <Route path="issue-summary/account-blocked" element={<AccountBlocked />} />
           <Route path="issue-summary/canceled-by-seller" element={<CanceledbySeller />} />
           <Route path="issue-summary/high-return" element={<HighReturn />} />
         </Route>
+
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
