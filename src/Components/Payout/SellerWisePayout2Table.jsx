@@ -13,7 +13,7 @@ import {
   Button,
 } from "@mui/material";
 
-const SellerWisePayoutSummary = ({ rows, loading, onToggle }) => {
+const SellerWisePayout2Table = ({ rows, loading, onToggle }) => {
   const INITIAL_COUNT = 5;
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [updatingId, setUpdatingId] = useState(null);
@@ -33,7 +33,7 @@ const SellerWisePayoutSummary = ({ rows, loading, onToggle }) => {
     <Box sx={{ pt: 3, width: "100%" }}>
       <Paper sx={{ p: 3, borderRadius: 2 }}>
         <Typography fontWeight={700} fontSize={18} mb={3}>
-          Seller Wise Fixed Payout Summary
+          Seller Wise NMV Payout Summary
         </Typography>
 
         {loading ? (
@@ -54,7 +54,7 @@ const SellerWisePayoutSummary = ({ rows, loading, onToggle }) => {
                     <TableCell width="15%">Month</TableCell>
                     <TableCell width="20%">Seller Id</TableCell>
                     <TableCell width="30%">Seller Name</TableCell>
-                    <TableCell width="20%">Fixed Payment</TableCell>
+                    <TableCell width="20%">NMV Payment</TableCell>
                     <TableCell width="15%">Received</TableCell>
                   </TableRow>
                 </TableHead>
@@ -65,7 +65,7 @@ const SellerWisePayoutSummary = ({ rows, loading, onToggle }) => {
                       <TableCell>{row.month}</TableCell>
                       <TableCell>{row.sellerId}</TableCell>
                       <TableCell>{row.sellerName}</TableCell>
-                      <TableCell>₹{row.fixed}</TableCell>
+                      <TableCell>₹{row.nmv}</TableCell>
                       <TableCell>
                         <Switch
                           checked={row.received}
@@ -142,4 +142,4 @@ const SellerWisePayoutSummary = ({ rows, loading, onToggle }) => {
   );
 };
 
-export default SellerWisePayoutSummary;
+export default SellerWisePayout2Table;

@@ -6,16 +6,17 @@ const isProfileIncomplete = (user) => {
   const business = profile?.userBusinessDetails;
 
   if (!profile) return true;
-
-  // Mandatory personal
   if (!profile.firstName) return true;
   if (!profile.lastName) return true;
   if (!profile.phoneNumber) return true;
 
-  // Mandatory business
-  if (!business?.businessName) return true;
-  if (!business?.gstNumber) return true;
-  if (!business?.gstAddress) return true;
+  if (!business) return true;
+
+  const businessName = business.businessName || business.business_name;
+  const gstNumber = business.gstNumber || business.gst_number;
+  const gstAddress = business.gstAddress || business.gst_address;
+
+  if (!businessName || !gstNumber || !gstAddress) return true;
 
   return false;
 };
@@ -25,20 +26,21 @@ const ProtectedRoute = ({ children }) => {
   const location = useLocation();
   const token = sessionStorage.getItem("token");
 
-  if (loading) return <div style={{ textAlign: "center" }}>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token || !user?.payload) {
+    return <Navigate to="/login" replace />;
+  }
 
-  if (!user || !user.payload) return <Navigate to="/login" replace />;
+  // ✅ IMPORTANT: allow onboarding freely
+  if (location.pathname === "/onboarding") {
+    return children;
+  }
 
   const incomplete = isProfileIncomplete(user);
 
-  if (incomplete && location.pathname !== "/onboarding") {
+  if (incomplete) {
     return <Navigate to="/onboarding" replace />;
-  }
-
-  if (!incomplete && location.pathname === "/onboarding") {
-    return <Navigate to="/" replace />;
   }
 
   return children;
