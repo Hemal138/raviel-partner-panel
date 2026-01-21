@@ -4,6 +4,7 @@ import axiosInstance from "../Components/Form/axiosInstance";
 import SearchFilters from "../Components/Payout/SearchFilters";
 import SellerWisePayoutSummary from "../Components/Payout/SellerWisePayoutSummary";
 import SellerWisePayout2Table from "../Components/Payout/SellerWisePayout2Table";
+import SellerWisePayout from "../Components/Payout/SellerWisePayout";
 
 const formatMonth = (date) => {
   if (!date) return "";
@@ -31,7 +32,10 @@ const Payout = () => {
           sellerName: item.sellerName,
           fixed: item.fixedPaymentAmount ?? 0,
           nmv: item.NMVPaymentAmount ?? 0,
-          received: !!item.fixedPaymentReceivedOrNot,
+
+          // ✅ IMPORTANT (API KEYS 그대로)
+          fixedPaymentReceivedOrNot: !!item.fixedPaymentReceivedOrNot,
+          NMVPaymentReceivedOrNot: !!item.NMVPaymentReceivedOrNot,
         }));
 
         setAllRows(mapped);
@@ -55,28 +59,38 @@ const Payout = () => {
     );
   };
 
-  // ✅ TOGGLE API HANDLER
-  const handleToggleReceived = async (sellerId, value) => {
-    await axiosInstance.post(
+  // ✅ ONE TOGGLE HANDLER FOR BOTH TABLES
+  const handleToggleReceived = async (sellerId, value, paymentType) => {
+    await axiosInstance.put(
       `/partner/confirm-seller-payment/${sellerId}`,
-      { isPaymentReceivedOrNot: value }
+      {
+        isPaymentReceivedOrNot: value,
+        paymentType,
+      }
     );
+
+    const key =
+      paymentType === "Fixed"
+        ? "fixedPaymentReceivedOrNot"
+        : "NMVPaymentReceivedOrNot";
 
     setAllRows((prev) =>
       prev.map((r) =>
-        r.sellerId === sellerId ? { ...r, received: value } : r
+        r.sellerId === sellerId ? { ...r, [key]: value } : r
       )
     );
 
     setFilteredRows((prev) =>
       prev.map((r) =>
-        r.sellerId === sellerId ? { ...r, received: value } : r
+        r.sellerId === sellerId ? { ...r, [key]: value } : r
       )
     );
   };
 
+
   return (
     <Container maxWidth={false} sx={{ maxWidth: "1400px" }}>
+      <SellerWisePayout/>
       <SearchFilters
         month={month}
         setMonth={setMonth}
@@ -98,7 +112,6 @@ const Payout = () => {
         loading={loading}
         onToggle={handleToggleReceived}
       />
-
     </Container>
   );
 };

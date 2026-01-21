@@ -12,21 +12,31 @@ import {
   Switch,
   Button,
 } from "@mui/material";
+import toast from "react-hot-toast";
 
-const SellerWisePayout2Table = ({ rows, loading, onToggle }) => {
+const SellerWisePayout2Table = ({ rows = [], loading, onToggle }) => {
   const INITIAL_COUNT = 5;
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [updatingId, setUpdatingId] = useState(null);
 
-  const showMore = visibleCount < rows.length;
-  const showLess = visibleCount > INITIAL_COUNT;
-
-  // ✅ SAFE TOGGLE HANDLER
   const handleToggle = async (sellerId, value) => {
-    if (typeof onToggle !== "function") return;
+    if (!onToggle) return;
+
     setUpdatingId(sellerId);
-    await onToggle(sellerId, value);
-    setUpdatingId(null);
+
+    try {
+      await onToggle(sellerId, value, "NMV");
+
+      toast.success(
+        value
+          ? "NMV payment marked as received"
+          : "NMV payment marked as not received"
+      );
+    } catch (error) {
+      toast.error("Failed to update NMV payment status");
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   return (
@@ -43,19 +53,14 @@ const SellerWisePayout2Table = ({ rows, loading, onToggle }) => {
         ) : (
           <>
             <TableContainer>
-              <Table tableLayout="fixed">
+              <Table>
                 <TableHead>
-                  <TableRow
-                    sx={{
-                      bgcolor: "#36C76C",
-                      "& td": { fontWeight: 700 },
-                    }}
-                  >
-                    <TableCell width="15%">Month</TableCell>
-                    <TableCell width="20%">Seller Id</TableCell>
-                    <TableCell width="30%">Seller Name</TableCell>
-                    <TableCell width="20%">NMV Payment</TableCell>
-                    <TableCell width="15%">Received</TableCell>
+                  <TableRow sx={{ bgcolor: "#36C76C" }}>
+                    <TableCell>Month</TableCell>
+                    <TableCell>Seller Id</TableCell>
+                    <TableCell>Seller Name</TableCell>
+                    <TableCell>NMV Payment</TableCell>
+                    <TableCell>Received</TableCell>
                   </TableRow>
                 </TableHead>
 
@@ -68,24 +73,14 @@ const SellerWisePayout2Table = ({ rows, loading, onToggle }) => {
                       <TableCell>₹{row.nmv}</TableCell>
                       <TableCell>
                         <Switch
-                          checked={row.received}
+                          checked={Boolean(row.NMVPaymentReceivedOrNot)}
                           disabled={updatingId === row.sellerId}
                           onChange={(e) =>
                             handleToggle(
                               row.sellerId,
-                              e.target.checked // ✅ true / false
+                              e.target.checked
                             )
                           }
-                          sx={{
-                            "& .MuiSwitch-switchBase.Mui-checked": {
-                              color: "#4cff9f",
-                            },
-                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
-                              { backgroundColor: "#4cff9f" },
-                            "& .MuiSwitch-track": {
-                              backgroundColor: "#ff4d4d",
-                            },
-                          }}
                         />
                       </TableCell>
                     </TableRow>
@@ -95,44 +90,13 @@ const SellerWisePayout2Table = ({ rows, loading, onToggle }) => {
             </TableContainer>
 
             {rows.length > INITIAL_COUNT && (
-              <Box display="flex" justifyContent="center" gap={2} mt={2}>
-                {showMore && (
-                  <Button
-                    sx={{
-                      borderRadius: "20px",
-                      border: "1px solid black",
-                      color: "black",
-                      backgroundColor: "transparent",
-                      "&:hover": {
-                        backgroundColor: "#36C66C",
-                        color: "white",
-                        border: "1px solid #36C66C",
-                      },
-                    }}
-                    onClick={() => setVisibleCount(rows.length)}
-                  >
-                    Show More
-                  </Button>
-                )}
-
-                {showLess && (
-                  <Button
-                    sx={{
-                      borderRadius: "20px",
-                      border: "1px solid black",
-                      color: "black",
-                      backgroundColor: "transparent",
-                      "&:hover": {
-                        backgroundColor: "#36C66C",
-                        color: "white",
-                        border: "1px solid #36C66C",
-                      },
-                    }}
-                    onClick={() => setVisibleCount(INITIAL_COUNT)}
-                  >
-                    Show Less
-                  </Button>
-                )}
+              <Box display="flex" justifyContent="center" mt={2}>
+                <Button onClick={() => setVisibleCount(rows.length)}>
+                  Show More
+                </Button>
+                <Button onClick={() => setVisibleCount(INITIAL_COUNT)}>
+                  Show Less
+                </Button>
               </Box>
             )}
           </>

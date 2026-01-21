@@ -9,26 +9,26 @@ const SellerWisePayout = () => {
 
   return (
     <>
-       <Box>
-        <Box sx={{display:"flex",alignItems:"center"}}>
-          <Box sx={{height:"30px",width:"30px",borderRadius:"50%",bgcolor:"#36C76C"}}></Box>
-          <Box sx={{paddingLeft:"20px", fontSize:"22px",fontWeight:"bold"}}>Seller Wise Payout</Box>
+      <Box sx={{marginBottom:"20px"}}>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ height: "30px", width: "30px", borderRadius: "50%", bgcolor: "#36C76C" }}></Box>
+          <Box sx={{ paddingLeft: "20px", fontSize: "22px", fontWeight: "bold" }}>Seller Wise Payout</Box>
         </Box>
-        <Box sx={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",pt:3}}>
-          <Box sx={{width:"30%",bgcolor:"#FFCCDB",height:"100%",borderRadius:"20px",padding:"25px",boxShadow: "0 4px 14px rgba(0,0,0,0.08)",margin:"10px"}}>
-            <Typography sx={{fontSize:"18px",paddingBottom:"7px"}}>Total Fixed Payment</Typography>
-            <Box sx={{fontSize:"25px",fontWeight:"bold"}}>₹{Total_Fixed_Payment}</Box>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", pt: 3 }}>
+          <Box sx={{ width: "30%", bgcolor: "#FFCCDB", height: "100%", borderRadius: "20px", padding: "25px", boxShadow: "0 4px 14px rgba(0,0,0,0.08)", margin: "10px" }}>
+            <Typography sx={{ fontSize: "18px", paddingBottom: "7px" }}>Total Fixed Payment</Typography>
+            <Box sx={{ fontSize: "25px", fontWeight: "bold" }}>₹{Total_Fixed_Payment}</Box>
           </Box>
-          <Box sx={{width:"30%",bgcolor:"#DADAFF",height:"100%",borderRadius:"20px",padding:"25px",boxShadow: "0 4px 14px rgba(0,0,0,0.08)",margin:"10px"}}>
-            <Typography sx={{fontSize:"18px",paddingBottom:"7px"}}>Total NMV Payment</Typography>
-            <Box sx={{fontSize:"25px",fontWeight:"bold"}}>₹{Total_NMV_Payment}</Box>
+          <Box sx={{ width: "30%", bgcolor: "#DADAFF", height: "100%", borderRadius: "20px", padding: "25px", boxShadow: "0 4px 14px rgba(0,0,0,0.08)", margin: "10px" }}>
+            <Typography sx={{ fontSize: "18px", paddingBottom: "7px" }}>Total NMV Payment</Typography>
+            <Box sx={{ fontSize: "25px", fontWeight: "bold" }}>₹{Total_NMV_Payment}</Box>
           </Box>
-          <Box sx={{width:"30%",bgcolor:"#DEFFEB",height:"100%",borderRadius:"20px",padding:"25px",boxShadow: "0 4px 14px rgba(0,0,0,0.08)",margin:"10px"}}>
-            <Typography sx={{fontSize:"18px",paddingBottom:"7px"}}>Final Payout</Typography>
-            <Box sx={{fontSize:"25px",fontWeight:"bold"}}>₹{Final_Payout}</Box>
+          <Box sx={{ width: "30%", bgcolor: "#DEFFEB", height: "100%", borderRadius: "20px", padding: "25px", boxShadow: "0 4px 14px rgba(0,0,0,0.08)", margin: "10px" }}>
+            <Typography sx={{ fontSize: "18px", paddingBottom: "7px" }}>Final Payout</Typography>
+            <Box sx={{ fontSize: "25px", fontWeight: "bold" }}>₹{Final_Payout}</Box>
           </Box>
         </Box>
-       </Box>
+      </Box>
     </>
   )
 }
