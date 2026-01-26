@@ -166,14 +166,10 @@ const Login = () => {
 
                   <Box
                     display="flex"
-                    justifyContent="space-between"
+                    justifyContent="center"
                     alignItems="center"
                     mb={3}
                   >
-                    <FormControlLabel
-                      control={<Checkbox />}
-                      label="Remember me"
-                    />
                     <Typography
                       color="#FF6B6B"
                       fontSize={14}

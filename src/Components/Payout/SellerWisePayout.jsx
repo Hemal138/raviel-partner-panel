@@ -41,18 +41,18 @@ const SellerWisePayout = ({ refreshKey }) => {
         </Box>
       </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", pt: 3 }}>
-        <Box sx={{ width: "30%", bgcolor: "#FFCCDB", p: 3, borderRadius: 2 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", pt: 3}}>
+        <Box sx={{ width: "30%", bgcolor: "#FFCCDB", p: 3, borderRadius: 2, margin:"10px" }}>
           <Typography>Total Fixed Payment</Typography>
           <Typography fontWeight="bold">₹{totalFixed}</Typography>
         </Box>
 
-        <Box sx={{ width: "30%", bgcolor: "#DADAFF", p: 3, borderRadius: 2 }}>
+        <Box sx={{ width: "30%", bgcolor: "#DADAFF", p: 3, borderRadius: 2, margin:"10px" }}>
           <Typography>Total NMV Payment</Typography>
           <Typography fontWeight="bold">₹{totalNMV}</Typography>
         </Box>
 
-        <Box sx={{ width: "30%", bgcolor: "#DEFFEB", p: 3, borderRadius: 2 }}>
+        <Box sx={{ width: "30%", bgcolor: "#DEFFEB", p: 3, borderRadius: 2, margin:"10px" }}>
           <Typography>Final Payout</Typography>
           <Typography fontWeight="bold">₹{finalPayout}</Typography>
         </Box>

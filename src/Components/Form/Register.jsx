@@ -22,6 +22,10 @@ import toast from "react-hot-toast";
 const Register = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+
+
 
   const [form, setForm] = useState({
     firstName: "",
@@ -62,17 +66,17 @@ const Register = () => {
     if (!validate()) return;
 
     try {
-await axiosInstance.post("/user/register", form);
+      await axiosInstance.post("/user/register", form);
 
-toast.success("🎉 Registered Successfully!");
+      toast.success("🎉 Registered Successfully!");
 
-setTimeout(() => {
-  navigate("/login");
-}, 1500);
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
 
-    }catch (err) {
-  toast.error("❌ Registration failed. Please try again.");
-}
+    } catch (err) {
+      toast.error("❌ Registration failed. Please try again.");
+    }
 
   };
 
@@ -196,9 +200,137 @@ setTimeout(() => {
                   ),
                 }}
               />
+              <div style={{ margin: "12px 0" }}>
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  style={{ marginRight: "8px", accentColor: "#635BFF" }}
+                />
+
+                <label style={{ color: "#071B2F", fontSize: "14px" }}>
+                  I accept{" "}
+                  <span
+                    style={{
+                      color: "#635BFF",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      textDecoration: "underline",
+                    }}
+                    onClick={() => setShowTerms(true)}
+                  >
+                    Terms & Conditions
+                  </span>
+                </label>
+              </div>
+
+              {showTerms && (
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "rgba(7,27,47,0.6)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 9999,
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      width: "720px",
+                      maxHeight: "80vh",
+                      padding: "24px",
+                      overflowY: "auto",
+                      borderRadius: "12px",
+                      boxShadow: "0 20px 40px rgba(7,27,47,0.25)",
+                    }}
+                  >
+                    <h2 style={{ color: "#635BFF", marginBottom: "6px" }}>
+                      Terms & Conditions
+                    </h2>
+
+                    <p style={{ fontWeight: 600, color: "#071B2F", marginBottom: "14px" }}>
+                      Your Agreement
+                    </p>
+
+                    <ul style={{ color: "#071B2F", fontSize: "14px", lineHeight: "1.6" }}>
+                      <li>
+                        Users must provide accurate, complete, and up-to-date personal and business information during registration and onboarding.
+                      </li>
+                      <li>
+                        Access to the platform dashboard is granted after login; however, f ull use of tools and services is enabled only after onboarding is completed and verified.
+                      </li>
+                      <li>
+                        Until onboarding is completed, users may view the dashboard but will not be permitted to perform operational actions.
+                      </li>
+                      <li>
+                        Users are responsible for maintaining the confidentiality of their login credentials and all activities performed under their account.
+                      </li>
+                      <li>
+                        Business and manager contact details provided will be used strictly for platform-related communication, notifications, and operational updates.
+                      </li>
+                      <li>
+                        Manager email and contact number are optional; however, one-click communication features will remain unavailable if these details are not provided.
+                      </li>
+                      <li>
+                        The platform may send system notifications, transactional messages, and alerts related to account activity, settlements, or operational issues.
+                      </li>
+                      <li>
+                        While reasonable security measures are implemented, the platform shall not be held responsible for any loss of data, delays, interruptions, or damages caused by system failures, third-party services, network issues, or events beyond reasonable control.
+                      </li>
+                      <li>
+                        Users are encouraged to maintain independent backups of important data and records.
+                      </li>
+                      <li>
+                        The platform shall not be liable for any indirect, incidental, or consequential losses arising from the use or inability to use the platform.
+                      </li>
+                      <li>
+                        Users agree not to misuse the platform, attempt unauthorized access, or engage in activities that violate applicable laws or platform policies.
+                      </li>
+                      <li>
+                        The platform reserves the right to restrict, suspend, or terminate access in cases of misuse, policy violations, or suspected fraudulent activity.
+                      </li>
+                      <li>
+                        All financial figures, payouts, and settlements are calculated based on system-recorded data and are subject to verification and applicable deductions.
+                      </li>
+                      <li>
+                        User data is processed and stored in accordance with the Privacy Policy and applicable data protection laws.
+                      </li>
+                    </ul>
+
+
+                    <div style={{ textAlign: "right", marginTop: "20px" }}>
+                      <button
+                        onClick={() => setShowTerms(false)}
+                        style={{
+                          padding: "10px 22px",
+                          background: "linear-gradient(135deg, #635BFF, #FF6692)",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+
+
 
               {/* REGISTER BUTTON */}
               <Button
+                disabled={!termsAccepted}
                 fullWidth
                 type="submit"
                 sx={{
@@ -244,7 +376,7 @@ setTimeout(() => {
 
           </Box>
           <Box sx={{ padding: "20px" }}>
-            <Typography component="ul" sx={{ pl: 2 ,color:"grey"}}>
+            <Typography component="ul" sx={{ pl: 2, color: "grey" }}>
               <Typography component="li">
                 Create your account to get started with a secure and centralized business
                 management platform.
