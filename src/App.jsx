@@ -40,7 +40,17 @@ const App = () => {
         {/* Root redirect to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
+
         {/* Public routes */}
+       <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+
         <Route
           path="/login"
           element={
@@ -50,14 +60,7 @@ const App = () => {
           }
         />
 
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          }
-        />
+     
 
         <Route
           path="/onboarding"

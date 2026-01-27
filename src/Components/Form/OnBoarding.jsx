@@ -11,8 +11,13 @@ import axiosInstance from "./axiosInstance";
 import toast from "react-hot-toast";
 import lockimageonboarding from "../../assets/form/lock.png";
 import logo from "../../assets/logos/LOGO.png";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserProvider";
+
 
 const OnBoarding = () => {
+
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     businessName: "",
     gstNumber: "",
@@ -63,20 +68,27 @@ const OnBoarding = () => {
   };
 
   /* 🔹 SUBMIT */
-  const handleSubmit = async () => {
-    if (!validate()) return;
+const { refreshUser } = useUser();
 
-    try {
-      await axiosInstance.post("/user-business-details", form);
+const handleSubmit = async () => {
+  if (!validate()) return;
 
-      toast.success("🎉 Onboarding completed successfully!");
+  try {
+    await axiosInstance.post("/user-business-details", form);
 
-      setTimeout(() => window.location.reload(), 1500);
-    } catch (err) {
-      toast.error("❌ Onboarding failed. Please try again.");
-      console.log(err);
-    }
-  };
+    toast.success("🎉 Onboarding completed successfully!");
+
+    await refreshUser(); // 🔥 VERY IMPORTANT
+
+    navigate("/partner-card");
+
+  } catch (err) {
+    toast.error("❌ Onboarding failed. Please try again.");
+    console.log(err);
+  }
+};
+
+
 
   return (
     <Box>

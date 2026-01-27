@@ -1,49 +1,66 @@
-import { Navigate, useLocation } from "react-router-dom";
-import { useUser } from "../Components/context/UserProvider";
+  import { Navigate, useLocation } from "react-router-dom";
+  import { useUser } from "../Components/context/UserProvider";
 
-const isProfileIncomplete = (user) => {
-  const profile = user?.payload;
-  const business = profile?.userBusinessDetails;
+  const isProfileIncomplete = (user) => {
+    const profile = user?.payload;
+    const business = profile?.userBusinessDetails;
 
-  if (!profile) return true;
-  if (!profile.firstName) return true;
-  if (!profile.lastName) return true;
-  if (!profile.phoneNumber) return true;
+    // 🔴 Required user fields
+    if (!profile) return true;
+    if (!profile.firstName) return true;
+    if (!profile.lastName) return true;
+    if (!profile.phoneNumber) return true;
 
-  if (!business) return true;
+    // 🔴 Business object must exist
+    if (!business) return true;
 
-  const businessName = business.businessName || business.business_name;
-  const gstNumber = business.gstNumber || business.gst_number;
-  const gstAddress = business.gstAddress || business.gst_address;
+    // 🔴 Required business fields ONLY
+    const businessName = business.businessName || business.business_name;
+    const gstNumber = business.gstNumber || business.gst_number;
+    const gstAddress = business.gstAddress || business.gst_address;
 
-  if (!businessName || !gstNumber || !gstAddress) return true;
+    if (!businessName) return true;
+    if (!gstNumber) return true;
+    if (!gstAddress) return true;
 
-  return false;
-};
+    return false;
+  };
 
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useUser();
-  const location = useLocation();
-  const token = sessionStorage.getItem("token");
+  const ProtectedRoute = ({ children }) => {
+    const { user, loading } = useUser();
+    const location = useLocation();
+    const token = sessionStorage.getItem("token");
 
-  if (loading) return <div>Loading...</div>;
+    if (loading) return <div>Loading...</div>;
 
-  if (!token || !user?.payload) {
-    return <Navigate to="/login" replace />;
-  }
+    // 🔐 Not logged in
+    if (!token || !user?.payload) {
+      return <Navigate to="/login" replace />;
+    }
 
-  // ✅ IMPORTANT: allow onboarding freely
-  if (location.pathname === "/onboarding") {
+    const incomplete = isProfileIncomplete(user);
+
+    // 🟢 If user tries to open onboarding AGAIN after completion
+    if (
+      location.pathname === "/onboarding" &&
+      !incomplete
+    ) {
+      return <Navigate to="/partner-card" replace />;
+    }
+
+    // 🟢 Allow onboarding if profile incomplete
+    if (location.pathname === "/onboarding") {
+      return children;
+    }
+
+    // 🚧 Force onboarding if profile incomplete
+    if (incomplete) {
+      return <Navigate to="/onboarding" replace />;
+    }
+
+    // ✅ All good
     return children;
-  }
+  };
 
-  const incomplete = isProfileIncomplete(user);
 
-  if (incomplete) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  return children;
-};
-
-export default ProtectedRoute;
+  export default ProtectedRoute;

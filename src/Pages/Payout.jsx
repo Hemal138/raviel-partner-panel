@@ -23,34 +23,36 @@ const Payout = () => {
   const [sellerName, setSellerName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  /* 🔹 Fetch Sellers */
+  /* 🔹 COMMON FETCH FUNCTION */
+  const fetchSellers = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axiosInstance.get("/partner/fetch-all-sellers");
+
+      const mapped = (res.data?.payload || []).map((item) => ({
+        month: formatMonth(item.launchingDate),
+        sellerId: item.sellerId,
+        sellerName: item.sellerName,
+
+        fixed: item.fixedPaymentAmount ?? 0,
+        nmv: item.NMVPaymentAmount ?? 0,
+
+        fixedPaymentReceivedOrNot: !!item.fixedPaymentReceivedOrNot,
+        NMVPaymentReceivedOrNot: !!item.NMVPaymentReceivedOrNot,
+      }));
+
+      setAllRows(mapped);
+      setFilteredRows(mapped);
+    } catch (err) {
+      console.error("Fetch sellers error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* 🔹 Initial API Call */
   useEffect(() => {
-    const fetchSellers = async () => {
-      try {
-        setLoading(true);
-
-        const res = await axiosInstance.get("/partner/fetch-all-sellers");
-
-        const mapped = (res.data?.payload || []).map((item) => ({
-          month: formatMonth(item.launchingDate),
-          sellerId: item.sellerId,
-          sellerName: item.sellerName,
-
-          fixed: item.fixedPaymentAmount ?? 0,
-          nmv: item.NMVPaymentAmount ?? 0,
-
-          // ✅ API keys 그대로
-          fixedPaymentReceivedOrNot: !!item.fixedPaymentReceivedOrNot,
-          NMVPaymentReceivedOrNot: !!item.NMVPaymentReceivedOrNot,
-        }));
-
-        setAllRows(mapped);
-        setFilteredRows(mapped);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSellers();
   }, []);
 
@@ -66,32 +68,22 @@ const Payout = () => {
     );
   };
 
-  /* 🔹 ONE Toggle Handler for both tables */
+  /* 🔹 Toggle Handler (API update + RE-FETCH) */
   const handleToggleReceived = async (sellerId, value, paymentType) => {
-    await axiosInstance.put(
-      `/partner/confirm-seller-payment/${sellerId}`,
-      {
-        isPaymentReceivedOrNot: value,
-        paymentType,
-      }
-    );
+    try {
+      await axiosInstance.put(
+        `/partner/confirm-seller-payment/${sellerId}`,
+        {
+          isPaymentReceivedOrNot: value,
+          paymentType,
+        }
+      );
 
-    const key =
-      paymentType === "Fixed"
-        ? "fixedPaymentReceivedOrNot"
-        : "NMVPaymentReceivedOrNot";
-
-    setAllRows((prev) =>
-      prev.map((row) =>
-        row.sellerId === sellerId ? { ...row, [key]: value } : row
-      )
-    );
-
-    setFilteredRows((prev) =>
-      prev.map((row) =>
-        row.sellerId === sellerId ? { ...row, [key]: value } : row
-      )
-    );
+      // 🔥 MAIN CHANGE: API RE-CALL
+      await fetchSellers();
+    } catch (err) {
+      console.error("Toggle error:", err);
+    }
   };
 
   return (
