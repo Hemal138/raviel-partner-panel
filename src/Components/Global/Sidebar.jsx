@@ -10,6 +10,7 @@ import {
   Typography,
   useMediaQuery,
   Tooltip,
+  Button,
 } from "@mui/material";
 
 import HomeIcon from "@mui/icons-material/Home";
@@ -40,11 +41,17 @@ const menuItems = [
 ];
 
 const Sidebar = () => {
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("token");
+    navigate("/login");
+  };
+
   /* 🔹 USER FROM CONTEXT (NO API CALL HERE) */
   const { user, loading } = useUser();
   const profile = user?.payload;
-
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [open, setOpen] = useState(false);
@@ -151,32 +158,80 @@ const Sidebar = () => {
       </List>
 
       {/* Profile */}
-      <Box
-        onClick={() => navigate("/profile")}
-        sx={{
-          p: 3,
-          borderTop: "1px solid #e5e7eb",
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          cursor: "pointer",
-        }}
-      >
-        <Avatar sx={{ bgcolor: "#635BFF" }}>
-          {profile?.firstName?.[0]?.toUpperCase() || "U"}
-        </Avatar>
+        <Box
+      onClick={() => navigate("/profile")}
+      sx={{
+        p: 3,
+        borderTop: "1px solid #e5e7eb",
+        display: "flex",
+        alignItems: "center",
+        gap: 2,
+        cursor: "pointer",
+        position: "relative",
 
-        {isExpanded && (
-          <Box>
-            <Typography fontWeight={600}>
-              {loading ? "Loading..." : profile?.firstName || "User"}
-            </Typography>
-            <Typography variant="caption" color="gray">
-              {profile?.email || ""}
-            </Typography>
-          </Box>
-        )}
-      </Box>
+        "&:hover": {
+          backgroundColor: "#f9fafb",
+        },
+
+        "&:hover .logout-btn, &:focus-within .logout-btn": {
+          opacity: 1,
+          pointerEvents: "auto",
+        },
+      }}
+    >
+      {/* Avatar */}
+      <Avatar sx={{ bgcolor: "#635BFF" }}>
+        {profile?.firstName?.[0]?.toUpperCase() || "U"}
+      </Avatar>
+
+      {/* Name + Email */}
+      {isExpanded && (
+        <Box>
+          <Typography fontWeight={600}>
+            {loading ? "Loading..." : profile?.firstName || "User"}
+          </Typography>
+          <Typography variant="caption" color="gray">
+            {profile?.email || ""}
+          </Typography>
+        </Box>
+      )}
+
+      {/* 🔴 Logout Button (Hover only) */}
+      <Button
+  className="logout-btn"
+  onClick={(e) => {
+    e.stopPropagation();
+    handleLogout();
+  }}
+  sx={{
+    position: "absolute",
+    left: 0,
+    right: 0,
+    // bottom: -6,
+    top: "-40%",
+
+    opacity: 0,
+    pointerEvents: "none",
+    transition: "all 0.2s ease",
+
+    width: "100%",
+    borderRadius: "10px",
+    py: 1,
+
+    color: "#DC2626",              // red-600
+    backgroundColor: "#FEF2F2",    // red-50
+    fontWeight: 600,
+    textTransform: "none",
+
+    "&:hover": {
+      backgroundColor: "#FEE2E2",  // red-100
+    },
+  }}
+>
+  Logout
+</Button>
+
+    </Box>
     </Box>
   );
 
