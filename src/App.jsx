@@ -29,20 +29,21 @@ import EditProfile from "./Components/Profile/EditProfile";
 import { Toaster } from "react-hot-toast";
 import PartnerCard from "./Components/PaymentCards.jsx/PartnerCard";
 import SellerMain from "./Components/Seller_Desk/SellerMain";
+import ScrollToTop from "./Pages/ScrollToTop";
 
 const App = () => {
   return (
     <Router>
       {/* ✅ TOASTER MUST BE OUTSIDE ROUTES */}
       <Toaster position="top-center" reverseOrder={false} />
-
+      <ScrollToTop />
       <Routes>
         {/* Root redirect to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
 
         {/* Public routes */}
-       <Route
+        <Route
           path="/register"
           element={
             <PublicRoute>
@@ -60,7 +61,7 @@ const App = () => {
           }
         />
 
-     
+
 
         <Route
           path="/onboarding"
@@ -102,7 +103,7 @@ const App = () => {
           <Route path="edit-profile" element={<EditProfile />} />
 
           {/* Seller Desk */}
-          <Route path="seller_desk/:sellerId" element={<SellerMain />} />
+          <Route path="/seller/:id" element={<SellerMain />} />
 
           {/* Issue Summary */}
           <Route

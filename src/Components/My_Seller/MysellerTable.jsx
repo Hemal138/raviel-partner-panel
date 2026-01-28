@@ -44,7 +44,7 @@ const MysellerTable = () => {
         ? res.data.payload
         : [];
 
-      console.log("📦 Sellers API data:", sellerList);
+      // console.log("📦 Sellers API data:", sellerList);
 
       setSellers(sellerList);
     } catch (error) {
@@ -83,7 +83,7 @@ const MysellerTable = () => {
         }
       );
 
-      console.log("✅ Update SKU API response:", res);
+      // console.log("✅ Update SKU API response:", res);
 
       toast.success("SKU updated successfully");
 
@@ -282,9 +282,10 @@ const MysellerTable = () => {
                       cursor: "pointer",
                       fontWeight: 600,
                     }}
-                    onClick={() =>
-                      navigate(`/seller_desk/${row.sellerId}`)
-                    }
+                   onClick={() => {
+      // console.log("👉 Clicked Seller ID:", row.id);
+                    navigate(`/seller/${row.id}`);
+  }}
                   >
                     View
                   </TableCell>

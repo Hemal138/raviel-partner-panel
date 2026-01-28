@@ -2,38 +2,45 @@ import React from "react";
 import { Box, Typography, Stack } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 
-const stats = [
-  {
-    title: "Total Orders",
-    value: "50,000",
-    bg: "#E0E1FF",
-  },
-  {
-    title: "GMV",
-    value: "50,000",
-    change: "7.6%",
-    bg: "#E6FFEF",
-  },
-  {
-    title: "Return Order",
-    value: "50",
-    change: "7.6%",
-    bg: "#FFD6C9",
-  },
-  {
-    title: "Return Order",
-    value: "50",
-    change: "7.6%",
-    bg: "#FFF2C2",
-  },
-];
 
-const StatsCards = () => {
+const StatsCards = ({ seller }) => {
+
+  const returnper = seller.totalReturnedTypeOrders * 100 / seller.totalOrders;
+  const cancelper = seller.cancelledOrders * 100 / seller.totalOrders;
+  console.log(seller.totalReturnedTypeOrders);
+  
+
+  const stats = [
+    {
+      title: "Total orders",
+      value: seller?.totalOrders ?? "N/A",
+      bg: "#E0E1FF",
+    },
+    {
+      title: "GMV",
+      value: seller?.totalGMV ?? "N/A",
+      bg: "#E6FFEF",
+    },
+    {
+      title: "Return Order",
+      value: seller?.totalReturnedTypeOrders ?? "N/A",
+      change: `${returnper || 0}%`,
+      bg: "#FFD6C9",
+    },
+    {
+      title: "Canceled Order",
+      value: seller?.cancelledOrders ?? "N/A",
+      change: `${cancelper || 0}%`,
+      bg: "#FFF2C2",
+    },
+  ];
+
+
   return (
     <Stack
       direction={{ xs: "column", md: "row" }}
       spacing={2}
-      sx={{ width: "100%" ,paddingTop:"20px"}}
+      sx={{ width: "100%", paddingTop: "20px" }}
     >
       {stats.map((item, index) => (
         <Box
