@@ -1,5 +1,11 @@
-import React, { useState, useMemo } from "react";
-import { Box, Typography, Button, Stack } from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Stack,
+  CircularProgress,
+} from "@mui/material";
 import {
   Chart as ChartJS,
   LineElement,
@@ -10,6 +16,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import axiosInstance from "../Form/axiosInstance";
 
 /* =========================
    🔹 HOVER LINE PLUGIN
@@ -29,7 +36,7 @@ const hoverLinePlugin = {
       ctx.moveTo(x, topY);
       ctx.lineTo(x, bottomY);
       ctx.lineWidth = 1;
-      ctx.strokeStyle = "#c7d2fe"; // hover line color
+      ctx.strokeStyle = "#c7d2fe";
       ctx.setLineDash([4, 4]);
       ctx.stroke();
       ctx.restore();
@@ -47,95 +54,81 @@ ChartJS.register(
   hoverLinePlugin
 );
 
+/* =========================
+   🔹 CONSTANTS
+========================= */
+const RANGE_MAP = {
+  Daily: "daily",
+  Monthly: "weekly",
+  Annually: "annually",
+};
+
+const datasetColors = {
+  delivered: "#22c55e",
+  return: "#ff4d6d",
+  cancel: "#fbbf24",
+  movement: "#2563eb",
+};
+
+/* =========================
+   🔹 COMPONENT
+========================= */
 const SalesReportChart = () => {
-  const [activeRange, setActiveRange] = useState("Daily");
+  const [activeRange, setActiveRange] = useState("daily");
+  const [apiData, setApiData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   /* =========================
-     🔹 DYNAMIC DATA SOURCE
+     🔹 API CALL
   ========================= */
-  const chartDataMap = {
-    Daily: {
-      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      Delivered: [20, 40, 35, 60, 55, 30, 45],
-      Return: [5, 15, 10, 20, 18, 12, 8],
-      Cancel: [2, 8, 6, 10, 7, 4, 3],
-      Movement: [10, 20, 15, 30, 25, 18, 12],
-    },
-
-    Monthly: {
-      labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-
-      Delivered: [2700, 1600, 1400, 1500],
-      Return: [3400, 2100, 1000, 2400],
-      Cancel: [2300, 900, 700, 950],
-      Movement: [1400, 450, 350, 1050],
-    },
-
-    Annually: {
-      labels: [
-        "JAN",
-        "FEB",
-        "MAR",
-        "APR",
-        "MAY",
-        "JUN",
-        "JUL",
-        "AUG",
-        "SEP",
-        "OCT",
-        "NOV",
-        "DEC",
-      ],
-      Delivered: [0, 300, 800, 1200, 400, 200, 100, 200, 400, 900, 600, 0],
-      Return: [100, 1500, 1800, 700, 600, 800, 200, 100, 900, 1100, 300, 100],
-      Cancel: [0, 900, 1100, 300, 200, 400, 0, 100, 600, 300, 50, 0],
-      Movement: [0, 500, 700, 200, 100, 150, 80, 120, 300, 500, 200, 50],
-    },
+  const fetchSalesReport = async (range) => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get("/partner/sales-report", {
+        params: { timeTenure: range },
+      });
+      setApiData(res.data?.payload || null);
+    } catch (error) {
+      console.error("❌ Sales report API error:", error);
+      setApiData(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const datasetColors = {
-    Delivered: "#22c55e",
-    Return: "#ff4d6d",
-    Cancel: "#fbbf24",
-    Movement: "#2563eb",
-  };
+  useEffect(() => {
+    fetchSalesReport(activeRange);
+  }, [activeRange]);
 
   /* =========================
-     🔹 BUILD DATA DYNAMICALLY
+     🔹 CHART DATA
   ========================= */
   const chartData = useMemo(() => {
-    const current = chartDataMap[activeRange];
+    if (!apiData) return { labels: [], datasets: [] };
 
     return {
-      labels: current.labels,
+      labels: apiData.labels || [],
       datasets: Object.keys(datasetColors).map((key) => ({
-        label: key,
-        data: current[key],
+        label: key.charAt(0).toUpperCase() + key.slice(1),
+        data: apiData[key] || [],
         borderColor: datasetColors[key],
         borderDash: [6, 6],
         tension: 0.45,
         pointRadius: 0,
       })),
     };
-  }, [activeRange]);
+  }, [apiData]);
 
   /* =========================
-     🔹 CHART OPTIONS
+     🔹 OPTIONS
   ========================= */
   const options = {
     responsive: true,
     maintainAspectRatio: false,
-    interaction: {
-      mode: "index",
-      intersect: false,
-    },
+    interaction: { mode: "index", intersect: false },
     plugins: {
       legend: { display: false },
-      tooltip: {
-        enabled: true,
-        mode: "index",
-        intersect: false,
-      },
+      tooltip: { mode: "index", intersect: false },
     },
     scales: {
       x: {
@@ -146,7 +139,7 @@ const SalesReportChart = () => {
         grid: { color: "#eef2f7" },
         ticks: {
           color: "#6b7280",
-          callback: (value) => (value >= 1000 ? `${value / 1000}k` : value),
+          callback: (v) => (v >= 1000 ? `${v / 1000}k` : v),
         },
       },
     },
@@ -154,18 +147,14 @@ const SalesReportChart = () => {
 
   const legendItem = (color, label) => (
     <Stack direction="row" spacing={1} alignItems="center" key={label}>
-      <Box
-        sx={{
-          width: 8,
-          height: 8,
-          borderRadius: "50%",
-          bgcolor: color,
-        }}
-      />
+      <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: color }} />
       <Typography fontSize={12}>{label}</Typography>
     </Stack>
   );
 
+  /* =========================
+     🔹 RENDER
+  ========================= */
   return (
     <Box
       sx={{
@@ -199,31 +188,56 @@ const SalesReportChart = () => {
 
         {/* RANGE BUTTONS */}
         <Stack direction="row" spacing={1}>
-          {["Daily", "Monthly", "Annually"].map((item) => (
-            <Button
-              key={item}
-              size="small"
-              onClick={() => setActiveRange(item)}
-              sx={{
-                textTransform: "none",
-                borderRadius: 2,
-                fontSize: 12,
-                bgcolor: activeRange === item ? "#0f172a" : "#f1f5f9",
-                color: activeRange === item ? "#fff" : "#475569",
-                "&:hover": {
-                  bgcolor: activeRange === item ? "#020617" : "#e5e7eb",
-                },
-              }}
-            >
-              {item}
-            </Button>
-          ))}
+          {Object.keys(RANGE_MAP).map((label) => {
+            const value = RANGE_MAP[label];
+            return (
+              <Button
+                key={value}
+                size="small"
+                disabled={loading}
+                onClick={() => setActiveRange(value)}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 2,
+                  fontSize: 12,
+                  bgcolor:
+                    activeRange === value ? "#0f172a" : "#f1f5f9",
+                  color:
+                    activeRange === value ? "#fff" : "#475569",
+                  "&:hover": {
+                    bgcolor:
+                      activeRange === value ? "#020617" : "#e5e7eb",
+                  },
+                }}
+              >
+                {label}
+              </Button>
+            );
+          })}
         </Stack>
       </Box>
 
       {/* CHART */}
-      <Box sx={{ height: 320 }}>
-        <Line data={chartData} options={options} />
+      <Box sx={{ height: 320, position: "relative" }}>
+        {!loading && (
+          <Line data={chartData} options={options} />
+        )}
+
+        {loading && (
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "rgba(255,255,255,0.75)",
+              zIndex: 2,
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        )}
       </Box>
     </Box>
   );

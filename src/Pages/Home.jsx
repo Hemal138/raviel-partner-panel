@@ -14,12 +14,10 @@ const Home = () => {
 
   const fetchLoggedInUser = async () => {
     try {
-      // console.log("➡️ Calling /user API...");
       setLoading(true);
 
       const res = await axiosInstance.get("/user");
 
-      console.log("✅ RESPONSE:", res.data);
 
       setUser(res.data?.payload || null);
     } catch (error) {
@@ -33,7 +31,6 @@ const Home = () => {
     fetchLoggedInUser();
   }, []);
 
-  console.log("🔁 USER STATE:", user);
 
   return (
     <Container maxWidth={false} sx={{ maxWidth: "1400px", fontFamily: "Inter" }}>
@@ -57,7 +54,7 @@ const Home = () => {
         </Box>
 
         <Box sx={{ flex: 1.3, minWidth: 320, maxWidth: 420 }}>
-          <IssueSummary user={user} />
+          <IssueSummary user={user}  loading={loading} />
         </Box>
       </Box>
 
@@ -67,9 +64,9 @@ const Home = () => {
         </Box>
 
         <Box sx={{ flex: "0 0 360px" }}>
-          <OrderReturnChart user={user} />
+          <OrderReturnChart user={user}  loading={loading} />
         </Box>
-      </Box>
+      </Box>              
 
       <Box sx={{ mb: 10 }} />
     </Container>

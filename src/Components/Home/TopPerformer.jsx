@@ -1,40 +1,36 @@
-import React from "react";
-import { Box, Typography } from "@mui/material";
-
-const rows = [
-  {
-    id: "XZY058",
-    name: "Hemal Creation",
-    orders: "1,05,000",
-    gmv: "₹10,05,000",
-  },
-  {
-    id: "XKHY08",
-    name: "Khushal satani",
-    orders: "99,000",
-    gmv: "₹99,0500",
-  },
-  {
-    id: "KHU005",
-    name: "Jayesh Bhayani",
-    orders: "85,000",
-    gmv: "₹70,000",
-  },
-  {
-    id: "XZY058",
-    name: "Hemal Creation",
-    orders: "1,05,000",
-    gmv: "₹10,05,000",
-  },
-  {
-    id: "XZY058",
-    name: "Hemal Creation",
-    orders: "1,05,000",
-    gmv: "₹10,05,000",
-  },
-];
+import React, { useEffect, useState } from "react";
+import { Box, Typography, CircularProgress } from "@mui/material";
+import axiosInstance from "../Form/axiosInstance"; // path adjust karjo
 
 const TopPerformer = () => {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchTopPerformers = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axiosInstance.get(
+        "/partner/top-performer-sellers",
+        {
+          params: { sellerCount: 5 },
+        }
+      );
+
+      if (res.data?.success) {
+        setRows(res.data.payload || []);
+      }
+    } catch (error) {
+      console.error("❌ Failed to fetch top performers", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTopPerformers();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -61,7 +57,7 @@ const TopPerformer = () => {
         </Typography>
       </Box>
 
-      {/* Header Row */}
+      {/* Header */}
       <Box
         sx={{
           bgcolor: "#40c76a",
@@ -78,25 +74,42 @@ const TopPerformer = () => {
         <Typography fontWeight={700}>GMV</Typography>
       </Box>
 
-      {/* Data Rows */}
-      {rows.map((row, index) => (
-        <Box
-          key={index}
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "1fr 2fr 1.5fr 1.5fr",
-            px: 2,
-            py: 2,
-            borderBottom: "1px solid #cfcfcfff",
-            alignItems: "center",
-          }}
-        >
-          <Typography fontSize={16}>{row.id}</Typography>
-          <Typography fontSize={16}>{row.name}</Typography>
-          <Typography fontSize={16}>{row.orders}</Typography>
-          <Typography fontSize={16}>{row.gmv}</Typography>
+      {/* Loading */}
+      {loading && (
+        <Box sx={{ py: 4, textAlign: "center" }}>
+          <CircularProgress />
         </Box>
-      ))}
+      )}
+
+      {/* No Data */}
+      {!loading && rows.length === 0 && (
+        <Typography sx={{ py: 3, textAlign: "center" }}>
+          No data found
+        </Typography>
+      )}
+
+      {/* Data Rows */}
+      {!loading &&
+        rows.map((row, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "1fr 2fr 1.5fr 1.5fr",
+              px: 2,
+              py: 2,
+              borderBottom: "1px solid #cfcfcfff",
+              alignItems: "center",
+            }}
+          >
+            <Typography fontSize={16}>{row.sellerId}</Typography>
+            <Typography fontSize={16}>{row.sellerName}</Typography>
+            <Typography fontSize={16}>{row.totalOrder}</Typography>
+            <Typography fontSize={16}>
+              ₹{Number(row.GMV).toLocaleString("en-IN")}
+            </Typography>
+          </Box>
+        ))}
     </Box>
   );
 };
