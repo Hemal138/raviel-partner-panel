@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import Calendar from "../Components/Home/Calendar";
 import { Box, Container } from "@mui/material";
+import axiosInstance from "../Components/Form/axiosInstance";
+
+import Calendar from "../Components/Home/Calendar";
 import DashboardStats from "../Components/Home/DashboardStats";
 import SalesReportChart from "../Components/Home/SalesReportChart";
 import IssueSummary from "../Components/Home/IssueSummary";
 import TopPerformer from "../Components/Home/TopPerformer";
 import OrderReturnChart from "../Components/Home/OrderReturnChart";
-import axiosInstance from "../Components/Form/axiosInstance";
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -15,10 +16,7 @@ const Home = () => {
   const fetchLoggedInUser = async () => {
     try {
       setLoading(true);
-
       const res = await axiosInstance.get("/user");
-
-
       setUser(res.data?.payload || null);
     } catch (error) {
       console.log("❌ API ERROR:", error?.response || error);
@@ -31,44 +29,59 @@ const Home = () => {
     fetchLoggedInUser();
   }, []);
 
-
   return (
-    <Container maxWidth={false} sx={{ maxWidth: "1400px", fontFamily: "Inter" }}>
+    <Container
+      maxWidth={false}
+      sx={{
+        maxWidth: "1400px",
+        fontFamily: "Inter",
+        pb: 6,
+        overflowX: "hidden",
+      }}
+    >
+      {/* 📅 Calendar */}
       <Calendar user={user} />
 
-      {/* ✅ FIX HERE */}
+      {/* 📊 Top Stats */}
       <DashboardStats statsData={user} loading={loading} />
 
-
+      {/* 📈 Sales Report + Issue Summary */}
       <Box
         sx={{
-          mt: 2,
-          display: "flex",
+          mt: 3,
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            md: "minmax(0, 3fr) minmax(320px, 1.2fr)",
+          },
           gap: 2,
           alignItems: "stretch",
-          flexDirection: { xs: "column", md: "row" },
+          paddingRight:"120px"
         }}
       >
-        <Box sx={{ flex: 2.5, minWidth: 0 }}>
-          <SalesReportChart user={user} />
-        </Box>
-
-        <Box sx={{ flex: 1.3, minWidth: 320, maxWidth: 420 }}>
-          <IssueSummary user={user}  loading={loading} />
-        </Box>
+        <SalesReportChart user={user} />
+        <IssueSummary user={user} loading={loading} />
       </Box>
 
-      <Box sx={{ display: "flex", gap: 2, alignItems: "stretch" }}>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <TopPerformer user={user} />
-        </Box>
+      {/* 🏆 Top Performer + Order Return */}
+      <Box
+        sx={{
+          mt: 3,
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            md: "minmax(0, 1fr) 360px",
+          },
+          gap: 2,
+          alignItems: "stretch",
+        }}
+      >
+        <TopPerformer user={user} />
+        <OrderReturnChart user={user} loading={loading} />
+      </Box>
 
-        <Box sx={{ flex: "0 0 360px" }}>
-          <OrderReturnChart user={user}  loading={loading} />
-        </Box>
-      </Box>              
-
-      <Box sx={{ mb: 10 }} />
+      {/* Bottom spacing */}
+      <Box sx={{ height: 40 }} />
     </Container>
   );
 };

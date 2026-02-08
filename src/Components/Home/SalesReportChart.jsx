@@ -103,21 +103,28 @@ const SalesReportChart = () => {
   /* =========================
      🔹 CHART DATA
   ========================= */
-  const chartData = useMemo(() => {
-    if (!apiData) return { labels: [], datasets: [] };
+const chartData = useMemo(() => {
+  if (!apiData) return { labels: [], datasets: [] };
 
-    return {
-      labels: apiData.labels || [],
-      datasets: Object.keys(datasetColors).map((key) => ({
-        label: key.charAt(0).toUpperCase() + key.slice(1),
-        data: apiData[key] || [],
-        borderColor: datasetColors[key],
-        borderDash: [6, 6],
-        tension: 0.45,
-        pointRadius: 0,
-      })),
-    };
-  }, [apiData]);
+  const KEY_MAP = {
+    delivered: "Delivered",
+    return: "Return",
+    cancel: "Cancel",
+    movement: "Movement",
+  };
+
+  return {
+    labels: apiData.labels || [],
+    datasets: Object.keys(datasetColors).map((key) => ({
+      label: KEY_MAP[key],
+      data: apiData[KEY_MAP[key]] || [],
+      borderColor: datasetColors[key],
+      tension: 0.45,
+      pointRadius: 0,
+    })),
+  };
+}, [apiData]);
+
 
   /* =========================
      🔹 OPTIONS
@@ -163,6 +170,7 @@ const SalesReportChart = () => {
         p: 3,
         boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
         minHeight: 420,
+        // width: "auto",
       }}
     >
       {/* HEADER */}

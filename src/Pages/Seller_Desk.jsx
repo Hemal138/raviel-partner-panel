@@ -4,26 +4,26 @@ import { useParams } from "react-router-dom";
 import SellerDetails from "../Components/Seller_Desk/SellerDetail";
 
 /* 🔹 Dummy seller list (API ready) */
-const SELLERS = [
-  {
-    sellerId: "XZY058",
-    name: "Hemal Creation",
-    email: "hemal@gmail.com",
-    launchDate: "12-12-2025",
-  },
-  {
-    sellerId: "XKHY08",
-    name: "Khushal Satani",
-    email: "khushalsatani007@gmail.com",
-    launchDate: "12-12-2025",
-  },
-  {
-    sellerId: "KHU005",
-    name: "Jayesh Bhayani",
-    email: "jayesh@gmail.com",
-    launchDate: "12-12-2025",
-  },
-];
+// const SELLERS = [
+//   {
+//     sellerId: "XZY058",
+//     name: "Hemal Creation",
+//     email: "hemal@gmail.com",
+//     launchDate: "12-12-2025",
+//   },
+//   {
+//     sellerId: "XKHY08",
+//     name: "Khushal Satani",
+//     email: "khushalsatani007@gmail.com",
+//     launchDate: "12-12-2025",
+//   },
+//   {
+//     sellerId: "KHU005",
+//     name: "Jayesh Bhayani",
+//     email: "jayesh@gmail.com",
+//     launchDate: "12-12-2025",
+//   },
+// ];
 
 const Seller_Desk = () => {
   const { sellerId } = useParams();

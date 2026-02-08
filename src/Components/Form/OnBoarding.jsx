@@ -13,9 +13,13 @@ import lockimageonboarding from "../../assets/form/lock.png";
 import logo from "../../assets/logos/LOGO.png";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+
 
 
 const OnBoarding = () => {
+const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -74,19 +78,24 @@ const handleSubmit = async () => {
   if (!validate()) return;
 
   try {
+    setSubmitting(true); // 🔥 START LOADER
+
     await axiosInstance.post("/user-business-details", form);
 
     toast.success("🎉 Onboarding completed successfully!");
 
-    await refreshUser(); // 🔥 VERY IMPORTANT
+    await refreshUser();
 
     navigate("/partner-card");
 
   } catch (err) {
     toast.error("❌ Onboarding failed. Please try again.");
     console.log(err);
+  } finally {
+    setSubmitting(false); // 🔥 STOP LOADER
   }
 };
+
 
 
 
@@ -162,6 +171,30 @@ const handleSubmit = async () => {
           </Box>
         </Paper>
       </Box>
+      {/* 🔄 FULL SCREEN LOADER */}
+<Backdrop
+  open={submitting}
+  sx={{
+    color: "#fff",
+    zIndex: (theme) => theme.zIndex.drawer + 999,
+    backdropFilter: "blur(4px)",
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 2,
+    }}
+  >
+    <CircularProgress size={50} sx={{ color: "#5A5DF0" }} />
+    <Typography fontSize={14} fontWeight={500}>
+      Setting up your account…
+    </Typography>
+  </Box>
+</Backdrop>
+
     </Box>
   );
 };

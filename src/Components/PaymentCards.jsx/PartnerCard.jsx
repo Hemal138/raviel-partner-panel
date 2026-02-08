@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -8,216 +9,203 @@ import {
   CircularProgress,
   Avatar,
   Container,
+  Backdrop,
+  TextField,
+  Stack,
 } from "@mui/material";
 import { Check, RocketLaunch } from "@mui/icons-material";
-import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../Form/axiosInstance";
+import toast from "react-hot-toast";
+import { useUser } from "../../Components/context/UserProvider";
 
 /* 🎨 COLORS */
 const COLORS = {
   primary: "#635BFF",
-  dark: "#071B2F",
+  highlight: "#F8C20A",
+  accent: "#FF6692",
   success: "#36C76C",
-  warning: "#F8C20A",
+  dark: "#071B2F",
 };
 
 const PLAN_THEMES = [
-  { color: "#635BFF", bg: "#DADAFF" },
-  { color: "#36C76C", bg: "#DEFFEB" },
-  { color: "#FF7955", bg: "#FFCFC2" },
-  { color: "#FF6692", bg: "#FFCCDB" },
+  { bg: "#DADAFF", accent: "#635BFF" },
+  { bg: "#DEFFEB", accent: "#36C76C" },
+  { bg: "#FDF5D9", accent: "#F8C20A" },
+  { bg: "#FFCCDB", accent: "#FF6692" },
 ];
+
+const loadRazorpay = () =>
+  new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
 
 const PartnerCard = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subscribing, setSubscribing] = useState(false);
+  const [recurringCount, setRecurringCount] = useState({});
+
+  const { user, refreshUser } = useUser();
   const navigate = useNavigate();
 
-  const fetchSubscriptionPlans = async () => {
-    try {
-      setLoading(true);
+  /* 🟢 BLOCK PAGE IF ACTIVE SUB EXISTS */
+  useEffect(() => {
+    const subs = user?.payload?.userSubscriptions || [];
+    const hasActive = Array.isArray(subs)
+      ? subs.some((s) => s.status === "active")
+      : subs?.status === "active";
 
-      const response = await axiosInstance.get("/subscriptions/fetch-plans", {
-        params: {
-          userType: "partner"
-        },
-        skipAuth: true,
-      });
+    if (hasActive) {
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
 
-      const apiPlans = response.data.payload?.partner || [];
+  /* 📦 FETCH PLANS */
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await axiosInstance.get(
+          "/subscriptions/fetch-plans?userType=partner&planType=monthly",
+          { skipAuth: true }
+        );
 
-      const formattedPlans = apiPlans.map((plan, index) => {
-        const theme = PLAN_THEMES[index % PLAN_THEMES.length];
-        return {
-          id: plan.id,
-          name: plan.planName,
-          description: plan.planDescription,
-          price: plan.price,
-          billingCycle: `/${plan.planType}`,
-          popular: plan.isPopular,
-          features:
-            plan.subscriptionPlanKeyFeatures?.map(
+        const apiPlans = res.data.payload?.partner || [];
+        setPlans(
+          apiPlans.map((p, i) => ({
+            id: p.id,
+            name: p.planName,
+            description: p.planDescription,
+            price: p.price,
+            billingCycle: `/${p.planType}`,
+            popular: p.isPopular,
+            features: p.subscriptionPlanKeyFeatures?.map(
               (f) => f.featureName
             ) || [],
-          color: theme.color,
-          bg: theme.bg,
-        };
+            ...PLAN_THEMES[i % PLAN_THEMES.length],
+          }))
+        );
+      } catch (err) {
+        toast.error("Failed to load plans");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
+  /* 💳 SUBSCRIBE */
+  const handleSubscribe = async (planId, months) => {
+    try {
+      setSubscribing(true);
+
+      const razorpayLoaded = await loadRazorpay();
+      if (!razorpayLoaded) {
+        toast.error("Razorpay SDK failed to load");
+        return;
+      }
+
+      const res = await axiosInstance.post("/subscriptions/create", {
+        planId,
+        months,
       });
 
-      setPlans(formattedPlans);
-    } catch (error) {
-      console.error("Failed to fetch plans", error);
+      const { key, subscriptionId } = res.data.payload;
+
+      const rzp = new window.Razorpay({
+        key,
+        subscription_id: subscriptionId,
+        name: "Partner Access",
+        handler: async () => {
+          toast.success("Subscription Activated 🎉");
+
+          /* 🔥 VERY IMPORTANT */
+          await refreshUser();
+
+          navigate("/", { replace: true });
+        },
+      });
+
+      rzp.open();
+    } catch (err) {
+      toast.error("Subscription failed");
     } finally {
-      setLoading(false);
+      setSubscribing(false);
     }
   };
 
-  useEffect(() => {
-    fetchSubscriptionPlans();
-  }, []);
-
   if (loading) {
     return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <CircularProgress />
+      <Box height="100vh" display="flex" alignItems="center" justifyContent="center">
+        <CircularProgress size={60} sx={{ color: COLORS.primary }} />
       </Box>
     );
   }
 
-  // id pass
-  const handlePlanSelect = async (planId) => {
-    try {
-      const response = await axiosInstance.get(
-        "/subscriptions/fetch-plans",
-        {
-          planId: planId,   // 👈 ID pass thai gayi
-          userType: "partner",
-        }
-      );
-
-      console.log("Plan selected:", response.data);
-
-      navigate("/"); // success pachi redirect
-    } catch (error) {
-      console.error("Plan select failed", error);
-    }
-  };
-
   return (
-    <Box sx={{ bgcolor: "#F8FAFF", minHeight: "100vh", py: 6 }}>
-      <Container maxWidth="xl">
+    <Box sx={{ bgcolor: "#F8FAFF", minHeight: "100vh" }}>
+      <Backdrop open={subscribing} sx={{ zIndex: 1300 }}>
+        <CircularProgress />
+      </Backdrop>
 
-        <Typography variant="h3" align="center" fontWeight="bold">
-          Partner Subscription Plans
-        </Typography>
-
+      <Container maxWidth="xl" sx={{ mt: 8 }}>
         <Box
-          sx={{
-            display: "flex",
-            gap: 4,
-            overflowX: "auto",
-            mt: 6,
-            pb: 2,
-          }}
+          display="grid"
+          gridTemplateColumns={{ xs: "1fr", sm: "repeat(2,1fr)", md: "repeat(4,1fr)" }}
+          gap={4}
         >
-          {plans.map((plan) => (
-            <Box key={plan.id} sx={{ minWidth: 320 }}>
-              <Card
-                onClick={() => handlePlanSelect(plan.id)}
-                sx={{
-                  height: "100%",
-                  borderRadius: 4,
-                  cursor: "pointer",
-                  background: `linear-gradient(180deg, ${plan.bg}, #fff)`,
-                  transition: "0.3s",
-                  "&:hover": {
-                    transform: "translateY(-6px)",
-                    boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
-                  },
-                }}
-              >
+          {plans.map((plan) => {
+            const count = recurringCount[plan.id];
 
-                {plan.popular && (
-                  <Chip
-                    label="MOST POPULAR"
-                    sx={{
-                      position: "absolute",
-                      top: 16,
-                      right: 16,
-                      bgcolor: COLORS.warning,
-                      fontWeight: "bold",
-                    }}
-                  />
-                )}
+            return (
+              <Card key={plan.id}>
+                <CardContent>
+                  <Typography fontWeight={800}>{plan.name}</Typography>
 
-                <CardContent sx={{ p: 4 }}>
-                  <Avatar
-                    sx={{
-                      bgcolor: plan.color,
-                      width: 56,
-                      height: 56,
-                      mx: "auto",
-                      mb: 2,
-                    }}
-                  >
-                    <RocketLaunch />
-                  </Avatar>
-
-                  <Typography align="center" fontWeight="bold">
-                    {plan.name}
-                  </Typography>
-
-                  <Typography align="center" color="text.secondary">
-                    {plan.description}
-                  </Typography>
-
-                  <Typography
-                    align="center"
-                    variant="h4"
-                    sx={{ color: plan.color, my: 2 }}
-                  >
+                  <Typography fontSize={32} fontWeight={900}>
                     ₹{plan.price}
-                    <Typography component="span" fontSize={14}>
-                      {plan.billingCycle}
-                    </Typography>
                   </Typography>
 
-                  {/* ✅ NAVIGATION BUTTON */}
+                  <TextField
+                    label="Autopay Months"
+                    type="number"
+                    fullWidth
+                    value={count || ""}
+                    onChange={(e) =>
+                      setRecurringCount({
+                        ...recurringCount,
+                        [plan.id]: e.target.value,
+                      })
+                    }
+                  />
+
                   <Button
                     fullWidth
-                    sx={{
-                      my: 3,
-                      py: 1.4,
-                      bgcolor: COLORS.primary,
-                      color: "#fff",
-                      fontWeight: "bold",
-                    }}
-                    onClick={() => navigate("/")}
+                    sx={{ mt: 2 }}
+                    disabled={!count}
+                    onClick={() => handleSubscribe(plan.id, count)}
                   >
                     Get Started
                   </Button>
 
-                  {plan.features.map((f, i) => (
-                    <Box key={i} sx={{ display: "flex", gap: 1 }}>
-                      <Check sx={{ color: COLORS.success }} />
-                      <Typography variant="body2">{f}</Typography>
-                    </Box>
-                  ))}
-
-
-
+                  <Stack mt={2}>
+                    {plan.features.map((f, i) => (
+                      <Box key={i} display="flex" gap={1}>
+                        <Check color="success" />
+                        <Typography>{f}</Typography>
+                      </Box>
+                    ))}
+                  </Stack>
                 </CardContent>
               </Card>
-            </Box>
-          ))}
+            );
+          })}
         </Box>
       </Container>
     </Box>

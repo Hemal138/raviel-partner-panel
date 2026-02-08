@@ -44,7 +44,6 @@ const MysellerTable = () => {
         ? res.data.payload
         : [];
 
-      // console.log("📦 Sellers API data:", sellerList);
 
       setSellers(sellerList);
     } catch (error) {
@@ -82,8 +81,6 @@ const MysellerTable = () => {
           currentSKUsLive: Number(newSku),
         }
       );
-
-      // console.log("✅ Update SKU API response:", res);
 
       toast.success("SKU updated successfully");
 
@@ -232,12 +229,15 @@ const MysellerTable = () => {
                         label={row.currentSKUsLive ?? 0}
                         size="small"
                         sx={{
-                          bgcolor: "#FFE5E5",
-                          color: "#D32F2F",
+                          bgcolor:
+                            (row.currentSKUsLive ?? 0) > 100 ? "#E8F5E9" : "#FFE5E5",
+                          color:
+                            (row.currentSKUsLive ?? 0) > 100 ? "#2E7D32" : "#D32F2F",
                           fontWeight: 700,
                           minWidth: 40,
                         }}
                       />
+
 
                       <TextField
                         size="small"
@@ -282,10 +282,9 @@ const MysellerTable = () => {
                       cursor: "pointer",
                       fontWeight: 600,
                     }}
-                   onClick={() => {
-      // console.log("👉 Clicked Seller ID:", row.id);
-                    navigate(`/seller/${row.id}`);
-  }}
+                    onClick={() => {
+                      navigate(`/seller/${row.id}`);
+                    }}
                   >
                     View
                   </TableCell>

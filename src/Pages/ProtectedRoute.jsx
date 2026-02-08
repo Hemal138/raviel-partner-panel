@@ -1,66 +1,56 @@
-  import { Navigate, useLocation } from "react-router-dom";
-  import { useUser } from "../Components/context/UserProvider";
+import { Navigate, useLocation } from "react-router-dom";
+import { useUser } from "../Components/context/UserProvider";
+import { Box, CircularProgress } from "@mui/material";
 
-  const isProfileIncomplete = (user) => {
-    const profile = user?.payload;
-    const business = profile?.userBusinessDetails;
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useUser();
+  const location = useLocation();
+  const token = sessionStorage.getItem("token");
 
-    // 🔴 Required user fields
-    if (!profile) return true;
-    if (!profile.firstName) return true;
-    if (!profile.lastName) return true;
-    if (!profile.phoneNumber) return true;
+  /* ⏳ LOADING */
+  if (loading) {
+    return (
+      <Box height="100vh" display="flex" alignItems="center" justifyContent="center">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-    // 🔴 Business object must exist
-    if (!business) return true;
+  /* 🔐 NOT LOGGED IN */
+  if (!token || !user?.payload) {
+    return <Navigate to="/login" replace />;
+  }
 
-    // 🔴 Required business fields ONLY
-    const businessName = business.businessName || business.business_name;
-    const gstNumber = business.gstNumber || business.gst_number;
-    const gstAddress = business.gstAddress || business.gst_address;
+  const payload = user.payload;
+  const isOnboarded = payload.isOnboardingCompleted === true;
 
-    if (!businessName) return true;
-    if (!gstNumber) return true;
-    if (!gstAddress) return true;
+  /* ✅ SAFE SUBSCRIPTION CHECK */
+  const subscriptions = Array.isArray(payload.userSubscriptions)
+    ? payload.userSubscriptions
+    : payload.userSubscriptions
+    ? [payload.userSubscriptions]
+    : [];
 
-    return false;
-  };
+  const hasActiveSubscription = subscriptions.some(
+    (sub) => sub.status === "active"
+  );
 
-  const ProtectedRoute = ({ children }) => {
-    const { user, loading } = useUser();
-    const location = useLocation();
-    const token = sessionStorage.getItem("token");
+  /* 🔴 ONBOARDING NOT DONE */
+  if (!isOnboarded && location.pathname !== "/onboarding") {
+    return <Navigate to="/onboarding" replace />;
+  }
 
-    if (loading) return <div>Loading...</div>;
+  /* 🔴 ONBOARDED BUT NO ACTIVE SUB */
+  if (
+    isOnboarded &&
+    !hasActiveSubscription &&
+    location.pathname !== "/partner-card"
+  ) {
+    return <Navigate to="/partner-card" replace />;
+  }
 
-    // 🔐 Not logged in
-    if (!token || !user?.payload) {
-      return <Navigate to="/login" replace />;
-    }
+  /* 🟢 ALLOW ACCESS */
+  return children;
+};
 
-    const incomplete = isProfileIncomplete(user);
-
-    // 🟢 If user tries to open onboarding AGAIN after completion
-    if (
-      location.pathname === "/onboarding" &&
-      !incomplete
-    ) {
-      return <Navigate to="/partner-card" replace />;
-    }
-
-    // 🟢 Allow onboarding if profile incomplete
-    if (location.pathname === "/onboarding") {
-      return children;
-    }
-
-    // 🚧 Force onboarding if profile incomplete
-    if (incomplete) {
-      return <Navigate to="/onboarding" replace />;
-    }
-
-    // ✅ All good
-    return children;
-  };
-
-
-  export default ProtectedRoute;
+export default ProtectedRoute;

@@ -1,6 +1,7 @@
 import { Box, Button, Typography, Paper } from "@mui/material";
 import React, { useState } from "react";
 import axiosInstanceForExcel from "../AddNewSeller/axiosInstanceForExcel";
+import toast from "react-hot-toast";
 
 const UserAddExcel = () => {
   const [file, setFile] = useState(null);
@@ -25,10 +26,10 @@ const UserAddExcel = () => {
 
   // 📤 Upload Excel
   const handleSubmit = async () => {
-    if (!file) {
-      alert("Please select an Excel file");
-      return;
-    }
+if (!file) {
+  toast.error("Please select an Excel file");
+  return;
+}
 
     /**
      * 🔥 SAFETY FIX

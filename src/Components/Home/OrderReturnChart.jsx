@@ -2,10 +2,13 @@ import React from "react";
 import { Box, Typography, Divider, Skeleton } from "@mui/material";
 
 const OrderReturnChart = ({ user, loading }) => {
+  const [active, setActive] = React.useState(null);
+// "total" | "return" | null
+
   const totalorder = user?.totalOrders ?? 0;
   const returnorder = user?.returnOrders ?? 0;
   console.log(user);
-  
+
   const returnPercent =
     totalorder > 0
       ? Number(((returnorder * 100) / totalorder).toFixed(2))
@@ -71,68 +74,79 @@ const OrderReturnChart = ({ user, loading }) => {
           <Skeleton width={120} sx={{ mx: "auto", mt: 2 }} />
         </Box>
       ) : (
-        <Box
-          sx={{
-            mt: 5,
-            position: "relative",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <svg width="360" height="220">
-            {/* Background arc */}
-            <path
-              d={`M ${cx - r} ${cy}
-                  A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-              fill="none"
-              stroke="#4f46ff"
-              strokeWidth={stroke}
-              strokeLinecap="round"
-            />
+<Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+  <svg width="260" height="260" viewBox="0 0 260 260">
 
-            {/* Progress arc */}
-            <path
-              d={`M ${cx - r} ${cy}
-                  A ${r} ${r} 0 0 1 ${
-                    cx - r * Math.cos(Math.PI - rad)
-                  } ${cy - r * Math.sin(Math.PI - rad)}`}
-              fill="none"
-              stroke="#e6ebfb"
-              strokeWidth={stroke}
-              strokeLinecap="round"
-            />
+    {/* TOTAL ORDERS */}
+    <circle
+      cx="130"
+      cy="130"
+      r="100"
+      fill="none"
+      stroke="#FFCFC2"
+      strokeWidth={active === "total" ? 26 : 18}
+      transform={active === "total" ? "scale(1.05) translate(-6 -6)" : ""}
+      style={{ transition: "all 0.35s ease", cursor: "pointer" }}
+      onMouseEnter={() => setActive("total")}
+      onMouseLeave={() => setActive(null)}
+    />
 
-            {/* Knob */}
-            <circle
-              cx={knobX}
-              cy={knobY}
-              r="16"
-              fill="#4f46ff"
-              stroke="#fff"
-              strokeWidth="5"
-              style={{
-                filter:
-                  "drop-shadow(0px 6px 10px rgba(0,0,0,0.15))",
-              }}
-            />
-          </svg>
+    {/* RETURN ORDERS */}
+    <circle
+      cx="130"
+      cy="130"
+      r="100"
+      fill="none"
+      stroke="#FF7955"
+      strokeWidth={active === "return" ? 26 : 18}
+      strokeDasharray={`${(returnPercent / 100) * 2 * Math.PI * 100} ${
+        2 * Math.PI * 100
+      }`}
+      strokeLinecap="round"
+      transform={`rotate(-90 130 130) ${
+        active === "return" ? "scale(1.05) translate(-6 -6)" : ""
+      }`}
+      style={{ transition: "all 0.35s ease", cursor: "pointer" }}
+      onMouseEnter={() => setActive("return")}
+      onMouseLeave={() => setActive(null)}
+    />
 
-          {/* Center text */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: "58%",
-              textAlign: "center",
-            }}
-          >
-            <Typography fontSize={45} fontWeight={800}>
-              {returnPercent}%
-            </Typography>
-            <Typography fontSize={18} color="#444">
-              Return
-            </Typography>
-          </Box>
-        </Box>
+    {/* CENTER TEXT */}
+    <text
+      x="130"
+      y="120"
+      textAnchor="middle"
+      fontSize="26"
+      fontWeight="700"
+      fill="#222"
+      style={{ transition: "all 0.3s ease" }}
+    >
+      {active === "total"
+        ? totalorder
+        : active === "return"
+        ? returnorder
+        : `${returnPercent}%`}
+    </text>
+
+    <text
+      x="130"
+      y="148"
+      textAnchor="middle"
+      fontSize="14"
+      fill="#666"
+    >
+      {active === "total"
+        ? "Total Orders"
+        : active === "return"
+        ? "Return Orders"
+        : "Returned"}
+    </text>
+  </svg>
+</Box>
+
+
+
+
       )}
     </Box>
   );

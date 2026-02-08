@@ -15,110 +15,126 @@ const formatMonth = (date) => {
 };
 
 const Payout = () => {
-  const [allRows, setAllRows] = useState([]);
-  const [filteredRows, setFilteredRows] = useState([]);
-
-  const [month, setMonth] = useState("");
-  const [sellerId, setSellerId] = useState("");
-  const [sellerName, setSellerName] = useState("");
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [payoutRefreshSignal, setPayoutRefreshSignal] = useState(0);
 
-
-  /* 🔹 COMMON FETCH FUNCTION */
-  const fetchSellers = async () => {
-    try {
-      setLoading(true);
-
-      const res = await axiosInstance.get("/partner/fetch-all-sellers");
-
-      const mapped = (res.data?.payload || []).map((item) => ({
-        month: formatMonth(item.launchingDate),
-        sellerId: item.id,
-        sellerName: item.sellerName,
-
-        fixed: item.fixedPaymentAmount ?? 0,
-        nmv: item.NMVPaymentAmount ?? 0,
-
-        fixedPaymentReceivedOrNot: !!item.fixedPaymentReceivedOrNot,
-        NMVPaymentReceivedOrNot: !!item.NMVPaymentReceivedOrNot,
-      }));
-
-      setAllRows(mapped);
-      setFilteredRows(mapped);
-    } catch (err) {
-      console.error("Fetch sellers error:", err);
-    } finally {
-      setLoading(false);
-    }
+const handleApplyFilters = (filters) => {
+  
+  const params = {
+    sellerId: filters.sellerId || undefined,
+    sellerName: filters.sellerName || undefined,
+    paymentByMonthYear: convertMonthToAPIFormat(filters.month),
   };
+  
+  fetchSellers(params);
+  filterDataPass(filters)
+};
 
-  /* 🔹 Initial API Call */
-  useEffect(() => {
-    fetchSellers();
-  }, []);
+const filterDataPass = (payload, filters) => {
 
-  /* 🔹 Apply Filters */
-  const handleApply = () => {
-    setFilteredRows(
-      allRows.filter(
-        (row) =>
-          (!month || row.month === month) &&
-          (!sellerId || row.sellerId.includes(sellerId)) &&
-          (!sellerName || row.sellerName.includes(sellerName))
-      )
-    );
-  };
+  payload.forEach((item, index) => {
+    console.log(item.NMVPaymentMonthYear);
+    console.log(filters);
+    
+  });
+};
 
-  /* 🔹 Toggle Handler (API update + RE-FETCH) */
-const handleToggleReceived = async (id, value, paymentType) => {
+
+
+const convertMonthToAPIFormat = (month) => {
+  if (!month) return undefined;
+
+  const [mm, yyyy] = month.split("-");
+  return `${yyyy}-${mm}-01`;
+};
+
+
+
+  /* 🔹 FETCH SELLERS */
+const fetchSellers = async (params = {}) => {
   try {
-    await axiosInstance.put(
-      `/partner/confirm-seller-payment/${id}`,
-      {
-        isPaymentReceivedOrNot: value,
-        paymentType,
-      }
+    setLoading(true);
+
+    const res = await axiosInstance.get(
+      "/partner/fetch-all-sellers",
+      { params }
     );
+      const payload = res?.data?.payload || [];
+ filterDataPass(payload);
+ 
+    const mapped = (res.data?.payload || []).map((item) => ({
+      month: formatMonth(item.launchingDate),
+      NMVPaymentDate: formatMonth(item.NMVPaymentMonthYear),
+      fixedPaymentDate: formatMonth(item.fixedPaymentMonthYear),
 
-    // 🔁 Refresh sellers table
-    await fetchSellers();
+      sellerId: item.id,
+      sellerName: item.sellerName,
 
-    // 🔥 Trigger payout summary refresh
-    setPayoutRefreshSignal((prev) => prev + 1);
+      fixed: item.fixedPaymentAmount ?? 0,
+      nmv: item.NMVPaymentAmount ?? 0,
+
+      fixedPaymentReceivedOrNot: !!item.fixedPaymentReceivedOrNot,
+      NMVPaymentReceivedOrNot: !!item.NMVPaymentReceivedOrNot,
+    }));
+
+    setRows(mapped);
   } catch (err) {
-    console.error("Toggle error:", err);
+    console.error("Fetch sellers error:", err);
+  } finally {
+    setLoading(false);
   }
 };
 
 
+  /* 🔹 Initial Load */
+  useEffect(() => {
+    fetchSellers();
+  }, []);
+
+  /* 🔹 Toggle Handler */
+  const handleToggleReceived = async (id, value, paymentType) => {
+    try {
+      await axiosInstance.put(
+        `/partner/confirm-seller-payment/${id}`,
+        {
+          isPaymentReceivedOrNot: value,
+          paymentType,
+        }
+      );
+
+      // 🔁 Refresh data
+      await fetchSellers();
+
+      // 🔥 Refresh payout summary
+      setPayoutRefreshSignal((prev) => prev + 1);
+    } catch (err) {
+      console.error("Toggle error:", err);
+    }
+  };
+
   return (
     <Container maxWidth={false} sx={{ maxWidth: "1400px" }}>
+      {/* 🔹 TOP SUMMARY */}
       <SellerWisePayout payoutRefreshSignal={payoutRefreshSignal} />
 
+      {/* 🔹 FILTER UI (logic not attached yet) */}
+      <SearchFilters onApply={handleApplyFilters} />
 
-      <SearchFilters
-        month={month}
-        setMonth={setMonth}
-        sellerId={sellerId}
-        setSellerId={setSellerId}
-        sellerName={sellerName}
-        setSellerName={setSellerName}
-        onApply={handleApply}
+
+      {/* 🔹 FIXED PAYOUT TABLE */}
+      <SellerWisePayoutSummary
+        rows={rows}
+        loading={loading}
+        onToggle={handleToggleReceived}
       />
 
-<SellerWisePayoutSummary
-  rows={filteredRows}
-  loading={loading}
-  onToggle={handleToggleReceived}
-/>
-
-<SellerWisePayout2Table
-  rows={filteredRows}
-  loading={loading}
-  onToggle={handleToggleReceived}
-/>
-
+      {/* 🔹 NMV PAYOUT TABLE */}
+      <SellerWisePayout2Table
+        rows={rows}
+        loading={loading}
+        onToggle={handleToggleReceived}
+      />
     </Container>
   );
 };

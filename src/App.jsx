@@ -30,6 +30,7 @@ import { Toaster } from "react-hot-toast";
 import PartnerCard from "./Components/PaymentCards.jsx/PartnerCard";
 import SellerMain from "./Components/Seller_Desk/SellerMain";
 import ScrollToTop from "./Pages/ScrollToTop";
+import PaymentOver from "./Components/PaymentCards.jsx/PaymentOver";
 
 const App = () => {
   return (
@@ -38,91 +39,86 @@ const App = () => {
       <Toaster position="top-center" reverseOrder={false} />
       <ScrollToTop />
       <Routes>
-        {/* Root redirect to login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+  {/* Public routes */}
+  <Route
+    path="/login"
+    element={
+      <PublicRoute>
+        <Login />
+      </PublicRoute>
+    }
+  />
+
+  <Route
+    path="/register"
+    element={
+      <PublicRoute>
+        <Register />
+      </PublicRoute>
+    }
+  />
+
+  {/* Onboarding */}
+  <Route
+    path="/onboarding"
+    element={
+      <ProtectedRoute>
+        <OnBoarding />
+      </ProtectedRoute>
+    }
+  />
+
+  {/* No sidebar pages */}
+  <Route
+    path="/paymentover"
+    element={
+      <ProtectedRoute>
+        <PaymentOver />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/partner-card"
+    element={
+      <ProtectedRoute>
+        <PartnerCard />
+      </ProtectedRoute>
+    }
+  />
+
+  {/* Sidebar layout pages */}
+  <Route
+    path="/"
+    element={
+      <ProtectedRoute>
+        <Layout />
+      </ProtectedRoute>
+    }
+  >
+    <Route index element={<Home />} />
+    <Route path="shipment" element={<Shipment />} />
+    <Route path="my_seller" element={<MySeller />} />
+    <Route path="add_new_seller" element={<AddNewSeller />} />
+    <Route path="payout" element={<Payout />} />
+    <Route path="download" element={<Download />} />
+    <Route path="attendance" element={<Attendance />} />
+    <Route path="seller_partner" element={<SellerPartner />} />
+    <Route path="profile" element={<Profile />} />
+    <Route path="edit-profile" element={<EditProfile />} />
+    <Route path="seller/:id" element={<SellerMain />} />
+
+    {/* Issue Summary */}
+    <Route path="issue-summary/account-blocked" element={<AccountBlocked />} />
+    <Route path="issue-summary/canceled-by-seller" element={<CanceledbySeller />} />
+    <Route path="issue-summary/high-return" element={<HighReturn />} />
+  </Route>
+
+  {/* Fallback */}
+  <Route path="*" element={<Navigate to="/login" replace />} />
+</Routes>
 
 
-        {/* Public routes */}
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          }
-        />
-
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-
-
-
-        <Route
-          path="/onboarding"
-          element={
-            <ProtectedRoute>
-              <OnBoarding />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Protected layout routes */}
-        <Route
-          path="partner-card"
-          element={
-            <ProtectedRoute>
-              <PartnerCard />
-            </ProtectedRoute>
-          }>
-
-        </Route>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-
-          <Route index element={<Home />} />
-          <Route path="shipment" element={<Shipment />} />
-          <Route path="my_seller" element={<MySeller />} />
-          <Route path="add_new_seller" element={<AddNewSeller />} />
-          <Route path="payout" element={<Payout />} />
-          <Route path="download" element={<Download />} />
-          <Route path="attendance" element={<Attendance />} />
-          <Route path="seller_partner" element={<SellerPartner />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="edit-profile" element={<EditProfile />} />
-
-          {/* Seller Desk */}
-          <Route path="/seller/:id" element={<SellerMain />} />
-
-          {/* Issue Summary */}
-          <Route
-            path="issue-summary/account-blocked"
-            element={<AccountBlocked />}
-          />
-          <Route
-            path="issue-summary/canceled-by-seller"
-            element={<CanceledbySeller />}
-          />
-          <Route
-            path="issue-summary/high-return"
-            element={<HighReturn />}
-          />
-        </Route>
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
     </Router>
   );
 };

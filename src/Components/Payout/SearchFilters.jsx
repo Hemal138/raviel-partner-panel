@@ -1,25 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Grid,
   TextField,
   Button,
-  MenuItem,
   Typography,
 } from "@mui/material";
 import { Autocomplete } from "@mui/material";
 
-const monthOptions = ["08-2025", "09-2025", "10-2025"];
+const monthOptions = ["08-2025", "09-2025", "12-2025"];
 
-const SearchFilters = ({
-  month,
-  setMonth,
-  sellerId,
-  setSellerId,
-  sellerName,
-  setSellerName,
-  onApply,
-}) => {
+const SearchFilters = ({ onApply }) => {
+  /* 🔹 SINGLE STATE FOR ALL FILTERS */
+  const [filters, setFilters] = useState({
+    month: "",
+    sellerId: "",
+    sellerName: "",
+  });
+
+  const handleChange = (key, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const handleApply = () => {
+    // console.log("Filters entered by user:", filters); // ✅ stored in one variable
+    onApply?.(filters); // parent ne mokli sakay (optional)
+  };
+
   return (
     <Box
       sx={{
@@ -33,7 +43,7 @@ const SearchFilters = ({
       }}
     >
       <Grid container spacing={3} alignItems="flex-end">
-        {/* Month */}
+        {/* MONTH */}
         <Grid item xs={12} md={5}>
           <Typography fontSize={13} fontWeight={600} mb={0.8}>
             Month
@@ -41,59 +51,60 @@ const SearchFilters = ({
 
           <Autocomplete
             sx={{ width: "200px" }}
-            freeSolo // ✅ user can type manually
-            options={monthOptions} // ✅ suggestions
-            value={month}
-            onChange={(e, newValue) => setMonth(newValue || "")}
-            onInputChange={(e, newInputValue) => setMonth(newInputValue)}
+            freeSolo
+            options={monthOptions}
+            value={filters.month}
+            onChange={(e, val) => handleChange("month", val || "")}
+            onInputChange={(e, val) => handleChange("month", val)}
             renderInput={(params) => (
               <TextField
                 {...params}
                 size="small"
-                placeholder="Select/Type Month"
+                placeholder="Select / Type Month"
                 sx={inputStyle}
               />
             )}
           />
         </Grid>
 
-        {/* Seller ID */}
+        {/* SELLER ID */}
         <Grid item xs={12} md={3}>
           <Typography fontSize={13} fontWeight={600} mb={0.8}>
             Seller ID
           </Typography>
+
           <TextField
             fullWidth
             size="small"
-            value={sellerId}
-            onChange={(e) => setSellerId(e.target.value)}
+            value={filters.sellerId}
+            onChange={(e) => handleChange("sellerId", e.target.value)}
             placeholder="Enter seller ID"
             sx={inputStyle}
           />
         </Grid>
 
-        {/* Seller Name */}
+        {/* SELLER NAME */}
         <Grid item xs={12} md={3}>
           <Typography fontSize={13} fontWeight={600} mb={0.8}>
             Seller Name
           </Typography>
+
           <TextField
             fullWidth
             size="small"
-            value={sellerName}
-            onChange={(e) => setSellerName(e.target.value)}
+            value={filters.sellerName}
+            onChange={(e) => handleChange("sellerName", e.target.value)}
             placeholder="Enter seller name"
             sx={inputStyle}
           />
         </Grid>
 
-        {/* Apply */}
+        {/* APPLY */}
         <Grid item xs={12} md={3}>
           <Button
             fullWidth
-            onClick={onApply}
+            onClick={handleApply}
             sx={{
-              //   height: "46px",
               borderRadius: "14px",
               fontWeight: 700,
               fontSize: "15px",
@@ -102,9 +113,7 @@ const SearchFilters = ({
               padding: "10px 30px",
               background: "#635BFF",
               boxShadow: "0 10px 24px rgba(91,140,255,0.45)",
-              "&:hover": {
-                bgcolor: "black",
-              },
+              "&:hover": { bgcolor: "black" },
             }}
           >
             Apply
