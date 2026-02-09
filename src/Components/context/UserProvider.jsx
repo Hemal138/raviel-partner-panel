@@ -7,12 +7,12 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔄 Fetch user from backend
+  // 🔄 Fetch / Refetch user from backend (NO refresh needed)
   const refreshUser = async () => {
     try {
       const data = await getUserProfile();
       setUser(data);
-      return data; // 🔥 useful for await
+      return data; // 🔥 so we can await it after onboarding
     } catch (err) {
       console.error("Failed to refresh user:", err);
       setUser(null);
@@ -20,7 +20,7 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // 🚀 Initial load (app start / refresh)
+  // 🚀 Initial app load
   useEffect(() => {
     const token = sessionStorage.getItem("token");
 
@@ -32,7 +32,7 @@ export const UserProvider = ({ children }) => {
 
     (async () => {
       setLoading(true);
-      await refreshUser();
+      await refreshUser(); // 👈 initial user fetch
       setLoading(false);
     })();
   }, []);
@@ -43,7 +43,8 @@ export const UserProvider = ({ children }) => {
         user,
         setUser,
         loading,
-        refreshUser,
+        refreshUser, // 👈 THIS is what we will use after onboarding
+         refetchUser: refreshUser, // alias
       }}
     >
       {children}

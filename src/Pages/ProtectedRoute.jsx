@@ -24,32 +24,66 @@ const ProtectedRoute = ({ children }) => {
   const payload = user.payload;
   const isOnboarded = payload.isOnboardingCompleted === true;
 
-  /* ✅ SAFE SUBSCRIPTION CHECK */
+  /* 🧾 SAFE SUBSCRIPTIONS ARRAY */
   const subscriptions = Array.isArray(payload.userSubscriptions)
     ? payload.userSubscriptions
     : payload.userSubscriptions
     ? [payload.userSubscriptions]
     : [];
 
-  const hasActiveSubscription = subscriptions.some(
-    (sub) => sub.status === "active"
-  );
+  const activeSub = subscriptions.find((sub) => sub.status);
 
-  /* 🔴 ONBOARDING NOT DONE */
-  if (!isOnboarded && location.pathname !== "/onboarding") {
-    return <Navigate to="/onboarding" replace />;
-  }
+  const status = activeSub?.status; // active | completed | cancelled | holded
 
-  /* 🔴 ONBOARDED BUT NO ACTIVE SUB */
-  if (
-    isOnboarded &&
-    !hasActiveSubscription &&
-    location.pathname !== "/partner-card"
-  ) {
+  /* 1️⃣ NO SUBSCRIPTION */
+if (!status) {
+  if (location.pathname !== "/partner-card") {
     return <Navigate to="/partner-card" replace />;
   }
+  return children;
+}
 
-  /* 🟢 ALLOW ACCESS */
+/* 2️⃣ COMPLETED */
+if (status === "completed") {
+  if (location.pathname !== "/paymentover") {
+    return <Navigate to="/paymentover" replace />;
+  }
+  return children;
+}
+
+/* 3️⃣ CANCELLED */
+if (status === "cancelled") {
+  if (location.pathname !== "/issue-summary/canceled-by-seller") {
+    return <Navigate to="/issue-summary/canceled-by-seller" replace />;
+  }
+  return children;
+}
+
+/* 4️⃣ HALTED */
+if (status === "halted") {
+  if (location.pathname !== "/issue-summary/account-blocked") {
+    return <Navigate to="/issue-summary/account-blocked" replace />;
+  }
+  return children;
+}
+
+/* 5️⃣ ACTIVE */
+  if (status === "active") {
+    if (!isOnboarded && location.pathname !== "/onboarding") {
+      return <Navigate to="/onboarding" replace />;
+    }
+
+    if (
+      isOnboarded &&
+      (location.pathname === "/onboarding" ||
+        location.pathname === "/partner-card")
+    ) {
+      console.log("status : Active      onboarding : incomplete bug");
+      return <Navigate to="/" replace />;
+    }
+    return children;
+  }
+
   return children;
 };
 

@@ -101,7 +101,7 @@ const PartnerCard = () => {
   }, []);
 
   /* 💳 SUBSCRIBE */
-  const handleSubscribe = async (planId, months) => {
+  const handleSubscribe = async (subscriptionPlanId, recurringCount) => {
     try {
       setSubscribing(true);
 
@@ -112,8 +112,8 @@ const PartnerCard = () => {
       }
 
       const res = await axiosInstance.post("/subscriptions/create", {
-        planId,
-        months,
+        subscriptionPlanId,
+        recurringCount,
       });
 
       const { key, subscriptionId } = res.data.payload;

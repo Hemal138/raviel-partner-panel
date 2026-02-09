@@ -1,202 +1,188 @@
+import React, { useState } from "react";
 import {
   Box,
   TextField,
-  Typography,
   Button,
-  MenuItem,
+  Typography,
   Paper,
 } from "@mui/material";
-import React, { useState } from "react";
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "../Form/axiosInstance";
 import toast from "react-hot-toast";
-import lockimageonboarding from "../../assets/form/lock.png";
-import logo from "../../assets/logos/LOGO.png";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
-import Backdrop from "@mui/material/Backdrop";
-import CircularProgress from "@mui/material/CircularProgress";
 
 
 
 const OnBoarding = () => {
-const [submitting, setSubmitting] = useState(false);
 
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    businessName: "",
-    gstNumber: "",
-    gstAddress: "",
-    role: "",
-    managerPhoneNumber: "",
-    managerEmail: "",
-  });
+const [formData, setFormData] = useState({
+  businessName: "",
+  gstNumber: "",
+  gstAddress: "",
+  managerEmail: "",
+  managerPhoneNumber: "",
+  role:"partner"
+});
 
-  const [errors, setErrors] = useState({});
+const [loading, setLoading] = useState(false);
 
-  /* 🔹 HANDLE INPUT */
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" });
-  };
-
-  /* 🔹 VALIDATION */
-  const validate = () => {
-    const newErrors = {};
-
-    if (!form.businessName.trim())
-      newErrors.businessName = "Business name is required";
-
-    if (!/^[0-9A-Z]{15}$/.test(form.gstNumber))
-      newErrors.gstNumber = "Enter valid 15-digit GST number";
-
-    if (!form.gstAddress.trim())
-      newErrors.gstAddress = "GST address is required";
-
-    if (!form.role) newErrors.role = "Select role";
-
-    if (
-      form.managerPhoneNumber &&
-      !/^[6-9]\d{9}$/.test(form.managerPhoneNumber)
-    )
-      newErrors.managerPhoneNumber =
-        "Enter valid 10-digit phone number";
-
-    if (
-      form.managerEmail &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.managerEmail)
-    )
-      newErrors.managerEmail = "Enter valid email address";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  /* 🔹 SUBMIT */
-const { refreshUser } = useUser();
-
-const handleSubmit = async () => {
-  if (!validate()) return;
-
-  try {
-    setSubmitting(true); // 🔥 START LOADER
-
-    await axiosInstance.post("/user-business-details", form);
-
-    toast.success("🎉 Onboarding completed successfully!");
-
-    await refreshUser();
-
-    navigate("/partner-card");
-
-  } catch (err) {
-    toast.error("❌ Onboarding failed. Please try again.");
-    console.log(err);
-  } finally {
-    setSubmitting(false); // 🔥 STOP LOADER
-  }
+const handleChange = (e) => {
+  setFormData({ ...formData, [e.target.name]: e.target.value });
 };
 
 
+const { refetchUser } = useUser();
+const navigate = useNavigate();
 
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    await axiosInstance.post("/user-business-details", formData);
+
+    toast.success("Onboarding completed");
+
+    // 🔄 REFRESH USER DATA (WITHOUT PAGE REFRESH)
+    await refetchUser();
+
+    // 🚀 DIRECT DASHBOARD
+    navigate("/", { replace: true });
+  } catch (err) {
+    toast.error(
+      err?.response?.data?.message || "Something went wrong"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
-    <Box>
-      {/* HEADER */}
-      <Box
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2,
+      }}
+    >
+      <Paper
+        elevation={18}
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          p: "10px 30px",
+          width: "100%",
+          maxWidth: 460,
+          p: 4,
+          borderRadius: "22px",
+          bgcolor: "#ffffff",
         }}
       >
-        <Box sx={{ height: "70px" }}>
-          <img src={logo} alt="logo" style={{ height: "100%" }} />
-        </Box>
-
+        {/* Center Title */}
         <Typography
-          component="a"
-          href="mailto:support@raviel.in?subject=Support%20Request"
-          sx={{
-            fontSize: "25px",
-            fontWeight: 600,
-            textDecoration: "none",
-            color: "black",
-            "&:hover": {
-              color: "primary.main",
-              textDecoration: "underline",
-            },
-          }}
+          variant="h4"
+          fontWeight={800}
+          textAlign="center"
+          mb={3}
+          sx={{ color: "#635BFF" }}
         >
-          Help
+          Onboarding
         </Typography>
-      </Box>
 
-      {/* CONTENT */}
-      <Box display="flex" justifyContent="center" p={2}>
-        <Paper sx={{ maxWidth: 1100, p: 3, borderRadius: 4 }}>
-          <Typography fontSize={30} fontWeight={700}>
-            Onboarding
-          </Typography>
+        {/* Form */}
+        <Box component="form" onSubmit={handleSubmit}>
+          <TextField
+            fullWidth
+            label="Business Name"
+            name="businessName"
+            value={formData.businessName}
+            onChange={handleChange}
+            required
+            sx={inputStyle}
+          />
 
-          <Box
+          <TextField
+            fullWidth
+            label="GST Number"
+            name="gstNumber"
+            value={formData.gstNumber}
+            onChange={handleChange}
+            required
+            sx={inputStyle}
+          />
+
+          <TextField
+            fullWidth
+            label="GST Address"
+            name="gstAddress"
+            value={formData.gstAddress}
+            onChange={handleChange}
+            required
+            multiline
+            rows={3}
+            sx={inputStyle}
+          />
+
+          <TextField
+            fullWidth
+            label="Manager Email"
+            name="managerEmail"
+            type="email"
+            value={formData.managerEmail}
+            onChange={handleChange}
+            required
+            sx={inputStyle}
+          />
+
+          <TextField
+            fullWidth
+            label="Manager Number"
+            name="managerPhoneNumber"
+            type="tel"
+            value={formData.managerPhoneNumber}
+            onChange={handleChange}
+            required
+            sx={inputStyle}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            disabled={loading}
             sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-              gap: 4,
-              alignItems: "center",
+              mt: 3,
+              py: 1.6,
+              borderRadius: "16px",
+              fontWeight: 700,
+              fontSize: "16px",
+              bgcolor: "#3968eb",
+              color: "#071B2F",
+              "&:hover": {
+                bgcolor: "#1e56ed",
+              },
             }}
           >
-            {/* FORM */}
-            <Box>
-              <TextField fullWidth label="Business Name" name="businessName" value={form.businessName} onChange={handleChange} error={!!errors.businessName} helperText={errors.businessName} sx={{ mb: 2 }} />
-              <TextField fullWidth label="GST Number" name="gstNumber" value={form.gstNumber} onChange={handleChange} error={!!errors.gstNumber} helperText={errors.gstNumber} sx={{ mb: 2 }} />
-              <TextField fullWidth multiline rows={3} label="GST Address" name="gstAddress" value={form.gstAddress} onChange={handleChange} error={!!errors.gstAddress} helperText={errors.gstAddress} sx={{ mb: 2 }} />
-              <TextField fullWidth label="Manager Phone Number (Optional)" name="managerPhoneNumber" value={form.managerPhoneNumber} onChange={handleChange} error={!!errors.managerPhoneNumber} helperText={errors.managerPhoneNumber} sx={{ mb: 2 }} />
-              <TextField fullWidth label="Manager Email (Optional)" name="managerEmail" value={form.managerEmail} onChange={handleChange} error={!!errors.managerEmail} helperText={errors.managerEmail} sx={{ mb: 2 }} />
-
-              <TextField select fullWidth label="Role" name="role" value={form.role} onChange={handleChange} error={!!errors.role} helperText={errors.role} sx={{ mb: 3 }}>
-                <MenuItem value="partner">Partner</MenuItem>
-              </TextField>
-
-              <Button fullWidth sx={{ py: 1.3, fontWeight: 600, color: "#fff", background: "#5A5DF0" }} onClick={handleSubmit}>
-                Submit
-              </Button>
-            </Box>
-
-            {/* IMAGE */}
-            <Box display="flex" justifyContent="center">
-              <img src={lockimageonboarding} alt="lock" />
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
-      {/* 🔄 FULL SCREEN LOADER */}
-<Backdrop
-  open={submitting}
-  sx={{
-    color: "#fff",
-    zIndex: (theme) => theme.zIndex.drawer + 999,
-    backdropFilter: "blur(4px)",
-  }}
->
-  <Box
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 2,
-    }}
-  >
-    <CircularProgress size={50} sx={{ color: "#5A5DF0" }} />
-    <Typography fontSize={14} fontWeight={500}>
-      Setting up your account…
-    </Typography>
-  </Box>
-</Backdrop>
-
+            {loading ? "Submitting..." : "Submit Onboarding"}
+          </Button>
+        </Box>
+      </Paper>
     </Box>
   );
 };
 
 export default OnBoarding;
+
+/* Shared input style */
+const inputStyle = {
+  mb: 2,
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "14px",
+    backgroundColor: "#FFFFFF",
+  },
+  "& label.Mui-focused": {
+    color: "#635BFF",
+  },
+  "& .MuiOutlinedInput-root.Mui-focused fieldset": {
+    borderColor: "#635BFF",
+  },
+};

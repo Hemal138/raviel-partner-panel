@@ -39,84 +39,84 @@ const App = () => {
       <Toaster position="top-center" reverseOrder={false} />
       <ScrollToTop />
       <Routes>
-  {/* Public routes */}
-  <Route
-    path="/login"
-    element={
-      <PublicRoute>
-        <Login />
-      </PublicRoute>
-    }
-  />
+        {/* Public routes */}
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
 
-  <Route
-    path="/register"
-    element={
-      <PublicRoute>
-        <Register />
-      </PublicRoute>
-    }
-  />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
 
-  {/* Onboarding */}
-  <Route
-    path="/onboarding"
-    element={
-      <ProtectedRoute>
-        <OnBoarding />
-      </ProtectedRoute>
-    }
-  />
+        {/* Onboarding */}
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute>
+              <OnBoarding />
+            </ProtectedRoute>
+          }
+        />
 
-  {/* No sidebar pages */}
-  <Route
-    path="/paymentover"
-    element={
-      <ProtectedRoute>
-        <PaymentOver />
-      </ProtectedRoute>
-    }
-  />
+        {/* No sidebar pages */}
+        <Route
+          path="/paymentover"
+          element={
+            <ProtectedRoute>
+              <PaymentOver />
+            </ProtectedRoute>
+          }
+        />
 
-  <Route
-    path="/partner-card"
-    element={
-      <ProtectedRoute>
-        <PartnerCard />
-      </ProtectedRoute>
-    }
-  />
+        <Route
+          path="/partner-card"
+          element={
+            <ProtectedRoute>
+              <PartnerCard />
+            </ProtectedRoute>
+          }
+        />
 
-  {/* Sidebar layout pages */}
-  <Route
-    path="/"
-    element={
-      <ProtectedRoute>
-        <Layout />
-      </ProtectedRoute>
-    }
-  >
-    <Route index element={<Home />} />
-    <Route path="shipment" element={<Shipment />} />
-    <Route path="my_seller" element={<MySeller />} />
-    <Route path="add_new_seller" element={<AddNewSeller />} />
-    <Route path="payout" element={<Payout />} />
-    <Route path="download" element={<Download />} />
-    <Route path="attendance" element={<Attendance />} />
-    <Route path="seller_partner" element={<SellerPartner />} />
-    <Route path="profile" element={<Profile />} />
-    <Route path="edit-profile" element={<EditProfile />} />
-    <Route path="seller/:id" element={<SellerMain />} />
+        {/* Sidebar layout pages */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Home />} />
+          <Route path="shipment" element={<Shipment />} />
+          <Route path="my_seller" element={<MySeller />} />
+          <Route path="add_new_seller" element={<AddNewSeller />} />
+          <Route path="payout" element={<Payout />} />
+          <Route path="download" element={<Download />} />
+          <Route path="attendance" element={<Attendance />} />
+          <Route path="seller_partner" element={<SellerPartner />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="edit-profile" element={<EditProfile />} />
+          <Route path="seller/:id" element={<SellerMain />} />
 
-    {/* Issue Summary */}
-    <Route path="issue-summary/account-blocked" element={<AccountBlocked />} />
-    <Route path="issue-summary/canceled-by-seller" element={<CanceledbySeller />} />
-    <Route path="issue-summary/high-return" element={<HighReturn />} />
-  </Route>
+          {/* Issue Summary */}
+          <Route path="issue-summary/account-blocked" element={<AccountBlocked />} />
+          <Route path="issue-summary/canceled-by-seller" element={<CanceledbySeller />} />
+          <Route path="issue-summary/high-return" element={<HighReturn />} />
+        </Route>
 
-  {/* Fallback */}
-  <Route path="*" element={<Navigate to="/login" replace />} />
-</Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
 
 
     </Router>
