@@ -79,13 +79,16 @@ const Register = () => {
       }, 1500);
     } catch (err) {
       const apiMessage =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        err?.response?.data?.errors?.[0] ||
+        err?.response?.data?.message ??
+        err?.response?.data?.error ??
+        (Array.isArray(err?.response?.data?.errors)
+          ? err.response.data.errors[0]
+          : null) ??
         "❌ Registration failed. Please try again.";
 
       toast.error(apiMessage, { id: toastId });
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
