@@ -12,22 +12,37 @@ import {
   OutlinedInput,
   Chip,
 } from "@mui/material";
+import { IconButton, InputAdornment } from "@mui/material";
 import { useState } from "react";
 import axiosInstance from "../Form/axiosInstance";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const CATEGORY_OPTIONS = [
-  "electronics",
-  "clothing",
-  "furniture",
-  "grocery",
-  "beauty",
+  "Fashion",
+  "Footwear",
+  "Home & Kitchen",
+  "Electronics",
+  "Grocery",
+  "Beauty",
+  "Sports",
+  "Toys",
+  "Automobile",
+  "Furniture",
+  "Jewelry",
+  "Books & Stationery",
+  "Industrial & Scientific",
+  "Pet Supplies",
+  "Medical & Healthcare",
 ];
 
 const UseAddForm = () => {
   const [form, setForm] = useState({
     sellerId: "",
     sellerName: "",
-    brandName: "",
     launchingDate: "",
     listingDate: "",
     sellerEmailId: "",
@@ -36,11 +51,11 @@ const UseAddForm = () => {
     gstNumber: "",
     productCategories: [],
     brandApproval: "pending",
-    trademarkClass: "pending",
   });
 
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,7 +68,6 @@ const UseAddForm = () => {
 
     if (!form.sellerId) newErrors.sellerId = "Required";
     if (!form.sellerName) newErrors.sellerName = "Required";
-    if (!form.brandName) newErrors.brandName = "Required";
 
     if (!/^[0-9]{10}$/.test(form.phoneNumber))
       newErrors.phoneNumber = "Enter valid 10 digit number";
@@ -70,8 +84,12 @@ const UseAddForm = () => {
     if (form.productCategories.length === 0)
       newErrors.productCategories = "Select at least one category";
 
+    if (!form.brandApproval)
+      newErrors.brandApproval = "Select brand approval status";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+
   };
 
   const handleSubmit = async () => {
@@ -80,11 +98,11 @@ const UseAddForm = () => {
     try {
       await axiosInstance.post("/partner/add-seller", form);
       setSuccess(true);
+      toast.success("Seller added successfully 🎉");
 
       setForm({
         sellerId: "",
         sellerName: "",
-        brandName: "",
         launchingDate: "",
         listingDate: "",
         sellerEmailId: "",
@@ -93,30 +111,30 @@ const UseAddForm = () => {
         gstNumber: "",
         productCategories: [],
         brandApproval: "pending",
-        trademarkClass: "pending",
       });
     } catch (err) {
-      alert("❌ Failed to add seller");
+      toast.error("Failed to add seller ❌");
+
       console.log(err);
 
     }
   };
 
   const inputStyle = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "10px",
-    "& fieldset": {
-      borderColor: "#DADAFF",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "10px",
+      "& fieldset": {
+        borderColor: "#DADAFF",
+      },
+      "&:hover fieldset": {
+        borderColor: "#635BFF",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#635BFF",
+        borderWidth: "1.5px",
+      },
     },
-    "&:hover fieldset": {
-      borderColor: "#635BFF",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#635BFF",
-      borderWidth: "1.5px",
-    },
-  },
-};
+  };
 
 
   return (
@@ -147,15 +165,7 @@ const UseAddForm = () => {
           sx={inputStyle}
         />
 
-        <TextField
-          label="Brand Name"
-          name="brandName"
-          value={form.brandName}
-          onChange={handleChange}
-          error={!!errors.brandName}
-          helperText={errors.brandName}
-          sx={inputStyle}
-        />
+
 
         <TextField
           label="Seller Email"
@@ -179,13 +189,25 @@ const UseAddForm = () => {
 
         <TextField
           label="Password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           name="password"
           value={form.password}
           onChange={handleChange}
           error={!!errors.password}
           helperText={errors.password}
           sx={inputStyle}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
 
         <TextField
@@ -220,39 +242,111 @@ const UseAddForm = () => {
       </Box>
 
       {/* 🔥 MULTI SELECT */}
-<FormControl
-  fullWidth
-  sx={{
-    mt: 3,
-  }}
->
-  <InputLabel
-    sx={{
-      color: "#071B2F",
-      fontWeight: 500,
-    }}
-  >
-    Product Categories
-  </InputLabel>
+      <FormControl
+        fullWidth
+        sx={{
+          mt: 3,
+        }}
+      >
+        <InputLabel
+          sx={{
+            color: "#071B2F",
+            fontWeight: 500,
+          }}
+        >
+          Product Categories
+        </InputLabel>
 
+        <Select
+          multiple
+          name="productCategories"
+          value={form.productCategories}
+          onChange={handleChange}
+          input={<OutlinedInput label="Product Categories" />}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                borderRadius: "14px",
+                mt: 1,
+                boxShadow: "0 12px 30px rgba(7,27,47,0.15)",
+              },
+            },
+          }}
+          sx={{
+            borderRadius: "14px",
+            // background: "#FDF5D9",
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#DADAFF",
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#635BFF",
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#635BFF",
+              borderWidth: "1.5px",
+            },
+          }}
+          renderValue={(selected) => (
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
+              {selected.map((value) => (
+                <Chip
+                  key={value}
+                  label={value}
+                  sx={{
+                    background: "linear-gradient(135deg, #635BFF, #FF6692)",
+                    color: "#fff",
+                    fontWeight: 600,
+                    borderRadius: "8px",
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+        >
+          {CATEGORY_OPTIONS.map((cat) => (
+            <MenuItem
+              key={cat}
+              value={cat}
+              sx={{
+                borderRadius: "8px",
+                mx: 1,
+                my: 0.5,
+                "&:hover": {
+                  background: "#DADAFF",
+                },
+                "&.Mui-selected": {
+                  background: "#DEFFEB !important",
+                  fontWeight: 600,
+                },
+              }}
+            >
+              {cat}
+            </MenuItem>
+          ))}
+        </Select>
+
+        {errors.productCategories && (
+          <Typography fontSize={12} color="error" mt={0.5}>
+            {errors.productCategories}
+          </Typography>
+        )}
+      </FormControl>
+      <FormControl fullWidth sx={{ mt: 2 }}>
+  <InputLabel>Brand Approval</InputLabel>
   <Select
-    multiple
-    name="productCategories"
-    value={form.productCategories}
+    name="brandApproval"
+    value={form.brandApproval}
     onChange={handleChange}
-    input={<OutlinedInput label="Product Categories" />}
-    MenuProps={{
-      PaperProps: {
-        sx: {
-          borderRadius: "14px",
-          mt: 1,
-          boxShadow: "0 12px 30px rgba(7,27,47,0.15)",
-        },
-      },
-    }}
+    label="Brand Approval"
+    error={!!errors.brandApproval}
     sx={{
-      borderRadius: "14px",
-      // background: "#FDF5D9",
+      borderRadius: "10px",
       "& .MuiOutlinedInput-notchedOutline": {
         borderColor: "#DADAFF",
       },
@@ -264,57 +358,18 @@ const UseAddForm = () => {
         borderWidth: "1.5px",
       },
     }}
-    renderValue={(selected) => (
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 1,
-        }}
-      >
-        {selected.map((value) => (
-          <Chip
-            key={value}
-            label={value}
-            sx={{
-              background: "linear-gradient(135deg, #635BFF, #FF6692)",
-              color: "#fff",
-              fontWeight: 600,
-              borderRadius: "8px",
-            }}
-          />
-        ))}
-      </Box>
-    )}
   >
-    {CATEGORY_OPTIONS.map((cat) => (
-      <MenuItem
-        key={cat}
-        value={cat}
-        sx={{
-          borderRadius: "8px",
-          mx: 1,
-          my: 0.5,
-          "&:hover": {
-            background: "#DADAFF",
-          },
-          "&.Mui-selected": {
-            background: "#DEFFEB !important",
-            fontWeight: 600,
-          },
-        }}
-      >
-        {cat}
-      </MenuItem>
-    ))}
+    <MenuItem value="approved">Approved</MenuItem>
+    <MenuItem value="pending">Pending</MenuItem>
   </Select>
 
-  {errors.productCategories && (
+  {errors.brandApproval && (
     <Typography fontSize={12} color="error" mt={0.5}>
-      {errors.productCategories}
+      {errors.brandApproval}
     </Typography>
   )}
 </FormControl>
+
 
 
       {/* 🚀 SUBMIT BUTTON */}

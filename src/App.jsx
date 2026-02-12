@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useTheme, useMediaQuery, Box, Typography } from "@mui/material";
+
 import ProtectedRoute from "./Pages/ProtectedRoute";
 import PublicRoute from "./Pages/PublicRoute";
 
@@ -33,11 +35,39 @@ import ScrollToTop from "./Pages/ScrollToTop";
 import PaymentOver from "./Components/PaymentCards.jsx/PaymentOver";
 
 const App = () => {
+  const theme = useTheme();
+
+  // 👇 Mobile detection (sm and below)
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  // 📱 If Mobile → Show Message Only
+  if (isMobile) {
+    return (
+      <Box
+        height="100vh"
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        textAlign="center"
+        p={3}
+      >
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          Please open this website on Desktop 💻
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          This platform is optimized for Desktop & Tablet only.
+        </Typography>
+      </Box>
+    );
+  }
+
+  // 💻 Desktop / Tablet → Full Website
   return (
     <Router>
-      {/* ✅ TOASTER MUST BE OUTSIDE ROUTES */}
       <Toaster position="top-center" reverseOrder={false} />
       <ScrollToTop />
+
       <Routes>
         {/* Public routes */}
         <Route
@@ -117,8 +147,6 @@ const App = () => {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-
-
     </Router>
   );
 };

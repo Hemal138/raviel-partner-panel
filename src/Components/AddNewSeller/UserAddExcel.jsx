@@ -51,12 +51,12 @@ if (!file) {
         formData
       );
 
-      alert("Excel uploaded successfully ✅");
+      toast.success("Excel uploaded successfully ✅");
       setFile(null);
       setInputKey(Date.now()); // reset file input
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Failed to upload Excel ❌");
+      toast.error("Failed to upload Excel ❌");
       setInputKey(Date.now()); // reset even on error
     } finally {
       setLoading(false);

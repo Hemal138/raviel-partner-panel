@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Typography, CircularProgress } from "@mui/material";
 import axiosInstance from "../Form/axiosInstance"; // path adjust karjo
 
-const TopPerformer = () => {
+const TopPerformer = ({ uploadStatus }) => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ const TopPerformer = () => {
 
   useEffect(() => {
     fetchTopPerformers();
-  }, []);
+  }, [uploadStatus]);
 
   return (
     <Box

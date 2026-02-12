@@ -148,68 +148,158 @@ const PartnerCard = () => {
     );
   }
 
-  return (
-    <Box sx={{ bgcolor: "#F8FAFF", minHeight: "100vh" }}>
-      <Backdrop open={subscribing} sx={{ zIndex: 1300 }}>
-        <CircularProgress />
-      </Backdrop>
+ return (
+  <Box sx={{ bgcolor: "#F4F7FF", minHeight: "100vh", py: 8 }}>
+    <Backdrop open={subscribing} sx={{ zIndex: 1300 }}>
+      <CircularProgress />
+    </Backdrop>
 
-      <Container maxWidth="xl" sx={{ mt: 8 }}>
-        <Box
-          display="grid"
-          gridTemplateColumns={{ xs: "1fr", sm: "repeat(2,1fr)", md: "repeat(4,1fr)" }}
-          gap={4}
-        >
-          {plans.map((plan) => {
-            const count = recurringCount[plan.id];
+    <Container maxWidth="xl">
+      <Typography
+        variant="h3"
+        fontWeight={900}
+        textAlign="center"
+        mb={1}
+        color={COLORS.dark}
+      >
+        Choose Your Partner Plan 🚀
+      </Typography>
 
-            return (
-              <Card key={plan.id}>
-                <CardContent>
-                  <Typography fontWeight={800}>{plan.name}</Typography>
+      <Typography
+        textAlign="center"
+        color="text.secondary"
+        mb={6}
+        fontSize={16}
+      >
+        Simple pricing. Auto-renew anytime. Cancel whenever you want.
+      </Typography>
 
-                  <Typography fontSize={32} fontWeight={900}>
-                    ₹{plan.price}
+      <Box
+        display="grid"
+        gridTemplateColumns={{
+          xs: "1fr",
+          sm: "repeat(2,1fr)",
+          md: "repeat(4,1fr)",
+        }}
+        gap={4}
+      >
+        {plans.map((plan) => {
+          const count = recurringCount[plan.id];
+
+          return (
+            <Card
+              key={plan.id}
+              sx={{
+                borderRadius: 4,
+                position: "relative",
+                background: `linear-gradient(180deg, ${plan.bg} 0%, #fff 55%)`,
+                boxShadow: plan.popular
+                  ? "0 25px 60px rgba(99,91,255,0.35)"
+                  : "0 15px 40px rgba(0,0,0,0.08)",
+                transform: plan.popular ? "scale(1.05)" : "none",
+                transition: "all .3s ease",
+                "&:hover": {
+                  transform: "translateY(-6px)",
+                  boxShadow: "0 25px 60px rgba(0,0,0,0.15)",
+                },
+              }}
+            >
+              {plan.popular && (
+                <Chip
+                  label="Most Popular"
+                  color="primary"
+                  sx={{
+                    position: "absolute",
+                    top: 16,
+                    right: 16,
+                    fontWeight: 700,
+                  }}
+                />
+              )}
+
+              <CardContent sx={{ p: 4 }}>
+                <Avatar
+                  sx={{
+                    bgcolor: plan.accent,
+                    mb: 2,
+                    width: 56,
+                    height: 56,
+                  }}
+                >
+                  <RocketLaunch />
+                </Avatar>
+
+                <Typography fontWeight={900} fontSize={20}>
+                  {plan.name}
+                </Typography>
+
+                <Typography color="text.secondary" mt={0.5} mb={2}>
+                  {plan.description}
+                </Typography>
+
+                <Typography
+                  fontSize={36}
+                  fontWeight={900}
+                  color={plan.accent}
+                >
+                  ₹{plan.price}
+                  <Typography component="span" fontSize={14}>
+                    {plan.billingCycle}
                   </Typography>
+                </Typography>
 
-                  <TextField
-                    label="Autopay Months"
-                    type="number"
-                    fullWidth
-                    value={count || ""}
-                    onChange={(e) =>
-                      setRecurringCount({
-                        ...recurringCount,
-                        [plan.id]: e.target.value,
-                      })
-                    }
-                  />
+                <TextField
+                  label="Autopay Months"
+                  type="number"
+                  fullWidth
+                  sx={{ mt: 3 }}
+                  value={count || ""}
+                  onChange={(e) =>
+                    setRecurringCount({
+                      ...recurringCount,
+                      [plan.id]: e.target.value,
+                    })
+                  }
+                />
 
-                  <Button
-                    fullWidth
-                    sx={{ mt: 2 }}
-                    disabled={!count}
-                    onClick={() => handleSubscribe(plan.id, count)}
-                  >
-                    Get Started
-                  </Button>
+                <Button
+                  fullWidth
+                  size="large"
+                  disabled={!count}
+                  sx={{
+                    mt: 3,
+                    py: 1.3,
+                    borderRadius: 3,
+                    fontWeight: 800,
+                    bgcolor: plan.accent,
+                    color:"white",
+                    "&:hover": {
+                      bgcolor: plan.accent,
+                      opacity: 0.9,
+                    },
+                  }}
+                  onClick={() => handleSubscribe(plan.id, count)}
+                >
+                  Get Started
+                </Button>
 
-                  <Stack mt={2}>
-                    {plan.features.map((f, i) => (
-                      <Box key={i} display="flex" gap={1}>
-                        <Check color="success" />
-                        <Typography>{f}</Typography>
-                      </Box>
-                    ))}
-                  </Stack>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </Box>
-      </Container>
-    </Box>
-  );
+                <Stack spacing={1.4} mt={4}>
+                  {plan.features.map((f, i) => (
+                    <Box key={i} display="flex" gap={1.2}>
+                      <Check sx={{ color: COLORS.success }} />
+                      <Typography fontSize={14}>{f}</Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Box>
+    </Container>
+  </Box>
+);
+
 };
 
 export default PartnerCard;

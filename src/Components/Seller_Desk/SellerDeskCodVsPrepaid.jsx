@@ -16,6 +16,11 @@ const SellerDeskCodVsPrepaid = ({ seller }) => {
         };
     }, [codPercentage, prepaidPercentage, totalGMV]);
 
+      const formatNumber = (num) => {
+    if (num === null || num === undefined || isNaN(num)) return "N/A";
+    return Number(num).toFixed(2);
+  };
+
     return (
         <Box
             sx={{
@@ -63,8 +68,8 @@ const SellerDeskCodVsPrepaid = ({ seller }) => {
                 gap={3}
                 fontSize={14}
             >
-                <Typography>● COD {codPercentage}%</Typography>
-                <Typography>● Prepaid {prepaidPercentage}%</Typography>
+                <Typography>● COD <Typography variant="span" component="span" sx={{fontWeight:"900"}}>{formatNumber(codPercentage)}%</Typography></Typography>
+                <Typography>● Prepaid <Typography variant="span" component="span" sx={{fontWeight:"900"}}>{formatNumber(prepaidPercentage)}%</Typography></Typography>
             </Box>
         </Box>
     );

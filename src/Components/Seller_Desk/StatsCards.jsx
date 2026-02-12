@@ -7,13 +7,17 @@ const StatsCards = ({ seller }) => {
 
   const returnper = seller.totalReturnedTypeOrders * 100 / seller.totalOrders;
   const cancelper = seller.cancelledOrders * 100 / seller.totalOrders;
-  console.log(seller.totalReturnedTypeOrders);
-  
+  // console.log(seller.totalReturnedTypeOrders);
+  const formatNumber = (num) => {
+    if (num === null || num === undefined || isNaN(num)) return "N/A";
+    return Number(num).toFixed(2);
+  };
+
 
   const stats = [
     {
       title: "Total orders",
-      value: seller?.totalOrders ?? "N/A",
+      value: formatNumber(seller?.totalOrders),
       bg: "#E0E1FF",
     },
     {
@@ -23,16 +27,17 @@ const StatsCards = ({ seller }) => {
     },
     {
       title: "Return Order",
-      value: seller?.totalReturnedTypeOrders ?? "N/A",
-      change: `${returnper || 0}%`,
+      value: formatNumber(seller?.totalReturnedTypeOrders),
+      change: `${formatNumber(returnper)}%`,
       bg: "#FFD6C9",
     },
     {
       title: "Canceled Order",
-      value: seller?.cancelledOrders ?? "N/A",
-      change: `${cancelper || 0}%`,
+      value: formatNumber(seller?.cancelledOrders),
+      change: `${formatNumber(cancelper)}%`,
       bg: "#FFF2C2",
     },
+
   ];
 
 

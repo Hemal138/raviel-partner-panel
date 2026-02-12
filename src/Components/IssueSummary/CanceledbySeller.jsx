@@ -145,12 +145,6 @@ const CanceledbySeller = () => {
                 ) : (
                   filteredRows.map((row) => (
                     <TableRow key={row.id} hover>
-                      {/* <TableCell width={40}>
-                        <IconButton size="small">
-                          <KeyboardArrowDownIcon />
-                        </IconButton>
-                      </TableCell> */}
-
                       <TableCell>{row.sellerId}</TableCell>
                       <TableCell>{row.sellerName}</TableCell>
                       <TableCell>{row.sellerEmailId}</TableCell>

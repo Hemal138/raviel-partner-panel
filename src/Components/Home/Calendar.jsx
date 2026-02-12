@@ -12,6 +12,8 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import toast from "react-hot-toast";
 import axiosInstanceForExcel from "../AddNewSeller/axiosInstanceForExcel";
+import CircularProgress from "@mui/material/CircularProgress";
+
 
 /* ================= HELPERS ================= */
 
@@ -58,7 +60,12 @@ const getDominantMonth = (startDate) => {
 
 /* ================= COMPONENT ================= */
 
-const Calendar = () => {
+const Calendar = ({ onUploadSuccess }) => {
+  const [uploading, setUploading] = useState(false);
+
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -84,15 +91,15 @@ const Calendar = () => {
   const monthlyRef = useRef(null);
 
   const getWeekRangeForUpload = (start) => {
-  const from = new Date(start);
-  const to = new Date(start);
-  to.setDate(from.getDate() + 6);
+    const from = new Date(start);
+    const to = new Date(start);
+    to.setDate(from.getDate() + 6);
 
-  return {
-    dateRangeFromWeeklyOrMonthly: formatDate(from),
-    dateRangeToWeeklyOrMonthly: formatDate(to),
+    return {
+      dateRangeFromWeeklyOrMonthly: formatDate(from),
+      dateRangeToWeeklyOrMonthly: formatDate(to),
+    };
   };
-};
 
 
 
@@ -278,107 +285,120 @@ const Calendar = () => {
 
   /* ================= UPLOAD ================= */
 
-const uploadToBackend = async (file, category, uploadDate, rangeData) => {
-  const fd = new FormData();
+  const uploadToBackend = async (file, category, uploadDate, rangeData) => {
+    const fd = new FormData();
 
-  fd.append("timeline-data-management-file", file);
-  fd.append("timelineDataTenure", category);
+    fd.append("timeline-data-management-file", file);
+    fd.append("timelineDataTenure", category);
 
-  // ✅ DAILY → uploadDate
-  if (category === "daily") {
-    fd.append("uploadDate", uploadDate);
-  }
+    // ✅ DAILY → uploadDate
+    if (category === "daily") {
+      fd.append("uploadDate", uploadDate);
+    }
 
-  // ✅ WEEKLY & MONTHLY → range
-  if (category === "weekly" || category === "monthly") {
-    fd.append(
-      "dateRangeFromWeeklyOrMonthly",
-      rangeData.dateRangeFromWeeklyOrMonthly
+    // ✅ WEEKLY & MONTHLY → range
+    if (category === "weekly" || category === "monthly") {
+      fd.append(
+        "dateRangeFromWeeklyOrMonthly",
+        rangeData.dateRangeFromWeeklyOrMonthly
+      );
+      fd.append(
+        "dateRangeToWeeklyOrMonthly",
+        rangeData.dateRangeToWeeklyOrMonthly
+      );
+    }
+
+    return axiosInstanceForExcel.post(
+      "/partner/timeline-data-management",
+      fd,
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
-    fd.append(
-      "dateRangeToWeeklyOrMonthly",
-      rangeData.dateRangeToWeeklyOrMonthly
-    );
-  }
-
-  return axiosInstanceForExcel.post(
-    "/partner/timeline-data-management",
-    fd,
-    { headers: { "Content-Type": "multipart/form-data" } }
-  );
-};
+  };
 
 
 
- const handleExcelUpload = async (e, category) => {
-  const file = e.target.files[0];
-  if (!file || !selectedDate) return;
+  const handleExcelUpload = (e, category) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const ext = file.name.split(".").pop();
-  setSelectedFileName(file.name);
+    setSelectedFile(file);
+    setSelectedFileName(file.name);
+    setSelectedCategory(category);
 
-  // 🔹 DAILY
-  const uploadDate = formatDate(selectedDate.date);
-
-  // 🔹 WEEKLY / MONTHLY range
-  const rangeData =
-    category === "weekly" || category === "monthly"
-      ? getWeekRangeForUpload(startDate)
-      : null;
-
-  try {
-    const res = await uploadToBackend(
-      new File(
-        [file],
-        `${category}_${uploadDate}.${ext}`,
-        { type: file.type }
-      ),
-      category,
-      uploadDate,
-      rangeData
-    );
-
-toast.success(res?.data?.message || "Excel uploaded successfully");
-
-/* 🔥 INSTANT UI UPDATE */
-if (category === "monthly") {
-  const monthKey = `${startDate.getFullYear()}-${startDate.getMonth()}`;
-
-  setMonthCache(prev => ({
-    ...prev,
-    [monthKey]: "uploaded",
-  }));
-
-  setMonthTopStatus("uploaded");
-}
-
-if (category === "weekly") {
-  setWeekTopStatus("uploaded");
-}
-
-if (category === "daily") {
-  const dayKey = formatDate(selectedDate.date);
-  setDayStatus(prev => ({
-    ...prev,
-    [dayKey]: "uploaded",
-  }));
-}
-
-/* OPTIONAL: background sync */
-const { fromDate, toDate } = getWeekRange(startDate);
-fetchWeekStatus(fromDate, toDate);
-
-handleClose();
-
-
-  } catch (err) {
-    const msg = err?.response?.data?.message || "Upload failed";
-    toast.error(msg);
-    setUploadError(msg);
-  } finally {
     e.target.value = "";
-  }
-};
+  };
+  const handleConfirmUpload = async () => {
+    if (!selectedFile || !selectedCategory || !selectedDate) return;
+
+    setUploading(true); // 🔥 start loader
+
+    const ext = selectedFile.name.split(".").pop();
+    const uploadDate = formatDate(selectedDate.date);
+
+    const rangeData =
+      selectedCategory === "weekly" || selectedCategory === "monthly"
+        ? getWeekRangeForUpload(startDate)
+        : null;
+
+    try {
+      const res = await uploadToBackend(
+        new File(
+          [selectedFile],
+          `${selectedCategory}_${uploadDate}.${ext}`,
+          { type: selectedFile.type }
+        ),
+        selectedCategory,
+        uploadDate,
+        rangeData
+      );
+
+      toast.success(res?.data?.message || "Excel uploaded successfully");
+
+      if (onUploadSuccess) {
+        onUploadSuccess({
+          type: selectedCategory,
+          date: uploadDate,
+          status: "uploaded",
+        });
+      }
+
+      /* UI update logic same */
+      if (selectedCategory === "monthly") {
+        const monthKey = `${startDate.getFullYear()}-${startDate.getMonth()}`;
+        setMonthCache(prev => ({
+          ...prev,
+          [monthKey]: "uploaded",
+        }));
+        setMonthTopStatus("uploaded");
+      }
+
+      if (selectedCategory === "weekly") {
+        setWeekTopStatus("uploaded");
+      }
+
+      if (selectedCategory === "daily") {
+        const dayKey = formatDate(selectedDate.date);
+        setDayStatus(prev => ({
+          ...prev,
+          [dayKey]: "uploaded",
+        }));
+      }
+
+      const { fromDate, toDate } = getWeekRange(startDate);
+      fetchWeekStatus(fromDate, toDate);
+
+      handleClose();
+
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Upload failed";
+      toast.error(msg);
+      setUploadError(msg);
+    } finally {
+      setUploading(false); // 🔥 stop loader
+    }
+  };
+
+
 
   const uploadBtnStyle = (bg, hoverBg) => ({
     px: 5,
@@ -527,7 +547,8 @@ handleClose();
           },
         }}
       >
-        <DialogContent sx={{ p: 4 }}>
+        <DialogContent sx={{ p: 4, position: "relative" }}>
+
           {/* HIDDEN INPUTS */}
           <input hidden ref={dailyRef} type="file" accept=".xls,.xlsx"
             onChange={(e) => handleExcelUpload(e, "daily")} />
@@ -616,6 +637,38 @@ handleClose();
             </Typography>
           )}
 
+          {/* 👇 ADD THIS HERE 👇 */}
+          {selectedFileName && (
+            <Box sx={{ mt: 3, textAlign: "center" }}>
+              <Typography fontSize={14} fontWeight={600}>
+                Selected File:
+              </Typography>
+
+              <Typography fontSize={13} color="primary" mt={0.5}>
+                {selectedFileName}
+              </Typography>
+              <Button
+                onClick={handleConfirmUpload}
+                disabled={uploading}
+                sx={{
+                  mt: 2,
+                  px: 4,
+                  py: 1.5,
+                  bgcolor: "#ff5722",
+                  color: "#fff",
+                  borderRadius: "12px",
+                  fontWeight: 600,
+                  "&:hover": { bgcolor: "#e64a19" },
+                }}
+              >
+                {uploading ? "Uploading..." : "Confirm Upload"}
+
+              </Button>
+
+            </Box>
+          )}
+
+
           {/* FINAL NOTICE */}
           <Box
             sx={{
@@ -629,14 +682,54 @@ handleClose();
               alignItems: "flex-start",
             }}
           >
-            <Box sx={{ fontSize: 20, lineHeight: "20px" }}>⚠️</Box>
 
-            <Typography fontSize={13} sx={{ color: "#6B5E00", lineHeight: 1.6 }}>
-              <b>Important Notice:</b> This Excel upload is a final action.
-              Once the file is uploaded, it cannot be edited, replaced, or undone.
-              Please ensure you are uploading the correct and final version of the file.
-            </Typography>
+            {/* FINAL NOTICE */}
+            {/* FINAL NOTICE */}
+            <Box
+              sx={{
+                // mt: 4,
+                p: 2,
+                borderRadius: "14px",
+                backgroundColor: "#FFF8E1",
+                border: "1px solid #FFE082",
+                display: "flex",
+                gap: 1.5,
+                alignItems: "flex-start",
+              }}
+            >
+              <Box sx={{ fontSize: 20, lineHeight: "20px" }}>⚠️</Box>
+
+              <Typography fontSize={13} sx={{ color: "#6B5E00", lineHeight: 1.6 }}>
+                <b>Important Notice:</b> This Excel upload is a final action.
+                Once the file is uploaded, it cannot be edited, replaced, or undone.
+                Please ensure you are uploading the correct and final version of the file.
+              </Typography>
+            </Box>
+
+
           </Box>
+          {uploading && (
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                backdropFilter: "blur(4px)",
+                backgroundColor: "rgba(255,255,255,0.6)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1000,
+                borderRadius: "24px",
+              }}
+            >
+              <CircularProgress />
+              <Typography mt={2} fontWeight={600}>
+                Uploading Excel... Please wait
+              </Typography>
+            </Box>
+          )}
+
         </DialogContent>
       </Dialog>
 

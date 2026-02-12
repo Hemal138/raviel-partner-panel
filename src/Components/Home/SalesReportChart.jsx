@@ -73,7 +73,7 @@ const datasetColors = {
 /* =========================
    🔹 COMPONENT
 ========================= */
-const SalesReportChart = () => {
+const SalesReportChart = ({ uploadStatus }) => {
   const [activeRange, setActiveRange] = useState("daily");
   const [apiData, setApiData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -98,7 +98,7 @@ const SalesReportChart = () => {
 
   useEffect(() => {
     fetchSalesReport(activeRange);
-  }, [activeRange]);
+  }, [activeRange , uploadStatus]);
 
   /* =========================
      🔹 CHART DATA

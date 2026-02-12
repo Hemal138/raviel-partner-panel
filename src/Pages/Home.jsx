@@ -12,6 +12,7 @@ import OrderReturnChart from "../Components/Home/OrderReturnChart";
 const Home = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [uploadStatus, setUploadStatus] = useState(null);
 
   const fetchLoggedInUser = async () => {
     try {
@@ -27,7 +28,7 @@ const Home = () => {
 
   useEffect(() => {
     fetchLoggedInUser();
-  }, []);
+  }, [uploadStatus]);
 
   return (
     <Container
@@ -40,7 +41,7 @@ const Home = () => {
       }}
     >
       {/* 📅 Calendar */}
-      <Calendar user={user} />
+      <Calendar user={user} onUploadSuccess={setUploadStatus}/>
 
       {/* 📊 Top Stats */}
       <DashboardStats statsData={user} loading={loading} />
@@ -59,7 +60,7 @@ const Home = () => {
           paddingRight:"120px"
         }}
       >
-        <SalesReportChart user={user} />
+        <SalesReportChart user={user} uploadStatus={uploadStatus}/>
         <IssueSummary user={user} loading={loading} />
       </Box>
 
