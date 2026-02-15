@@ -17,8 +17,8 @@ import { useState } from "react";
 import axiosInstance from "../Form/axiosInstance";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import toast from "react-hot-toast";
+
 
 
 const CATEGORY_OPTIONS = [
@@ -92,33 +92,36 @@ const UseAddForm = () => {
 
   };
 
-  const handleSubmit = async () => {
-    if (!validate()) return;
+const handleSubmit = async () => {
+  if (!validate()) return;
 
-    try {
-      await axiosInstance.post("/partner/add-seller", form);
-      setSuccess(true);
-      toast.success("Seller added successfully 🎉");
+  try {
+    await axiosInstance.post("/partner/add-seller", form);
 
-      setForm({
-        sellerId: "",
-        sellerName: "",
-        launchingDate: "",
-        listingDate: "",
-        sellerEmailId: "",
-        phoneNumber: "",
-        password: "",
-        gstNumber: "",
-        productCategories: [],
-        brandApproval: "pending",
-      });
-    } catch (err) {
-      toast.error("Failed to add seller ❌");
+    toast.success("Seller added successfully 🎉");
 
-      console.log(err);
+    setForm({
+      sellerId: "",
+      sellerName: "",
+      launchingDate: "",
+      listingDate: "",
+      sellerEmailId: "",
+      phoneNumber: "",
+      password: "",
+      gstNumber: "",
+      productCategories: [],
+      brandApproval: "pending",
+    });
 
-    }
-  };
+  } catch (err) {
+    const apiMessage =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      "Something went wrong";
+
+    toast.error(apiMessage);
+  }
+};
 
   const inputStyle = {
     "& .MuiOutlinedInput-root": {
@@ -338,37 +341,37 @@ const UseAddForm = () => {
         )}
       </FormControl>
       <FormControl fullWidth sx={{ mt: 2 }}>
-  <InputLabel>Brand Approval</InputLabel>
-  <Select
-    name="brandApproval"
-    value={form.brandApproval}
-    onChange={handleChange}
-    label="Brand Approval"
-    error={!!errors.brandApproval}
-    sx={{
-      borderRadius: "10px",
-      "& .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#DADAFF",
-      },
-      "&:hover .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#635BFF",
-      },
-      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#635BFF",
-        borderWidth: "1.5px",
-      },
-    }}
-  >
-    <MenuItem value="approved">Approved</MenuItem>
-    <MenuItem value="pending">Pending</MenuItem>
-  </Select>
+        <InputLabel>Brand Approval</InputLabel>
+        <Select
+          name="brandApproval"
+          value={form.brandApproval}
+          onChange={handleChange}
+          label="Brand Approval"
+          error={!!errors.brandApproval}
+          sx={{
+            borderRadius: "10px",
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#DADAFF",
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#635BFF",
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#635BFF",
+              borderWidth: "1.5px",
+            },
+          }}
+        >
+          <MenuItem value="approved">Approved</MenuItem>
+          <MenuItem value="pending">Pending</MenuItem>
+        </Select>
 
-  {errors.brandApproval && (
-    <Typography fontSize={12} color="error" mt={0.5}>
-      {errors.brandApproval}
-    </Typography>
-  )}
-</FormControl>
+        {errors.brandApproval && (
+          <Typography fontSize={12} color="error" mt={0.5}>
+            {errors.brandApproval}
+          </Typography>
+        )}
+      </FormControl>
 
 
 
@@ -391,15 +394,7 @@ const UseAddForm = () => {
         Add Seller
       </Button>
 
-      <Snackbar open={success} autoHideDuration={2000}>
-        <Alert
-          severity="success"
-          variant="filled"
-          sx={{ background: "#36C76C" }}
-        >
-          🎉 Seller added successfully!
-        </Alert>
-      </Snackbar>
+
     </>
 
   );

@@ -7,6 +7,18 @@ const UserAddExcel = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [inputKey, setInputKey] = useState(Date.now()); // 🔥 important
+  const [uploadError, setUploadError] = useState(null);
+
+  const thStyle = {
+    padding: "10px",
+    textAlign: "left",
+    fontWeight: 600,
+    borderBottom: "1px solid #E0E0E0",
+  };
+
+  const tdStyle = {
+    padding: "8px 10px",
+  };
 
   // 📂 Select Excel
   const handleFileChange = (e) => {
@@ -26,15 +38,11 @@ const UserAddExcel = () => {
 
   // 📤 Upload Excel
   const handleSubmit = async () => {
-if (!file) {
-  toast.error("Please select an Excel file");
-  return;
-}
+    if (!file) {
+      toast.error("Please select an Excel file");
+      return;
+    }
 
-    /**
-     * 🔥 SAFETY FIX
-     * Clone file to avoid ERR_UPLOAD_FILE_CHANGED
-     */
     const safeFile = new File([file], file.name, {
       type: file.type,
       lastModified: file.lastModified,
@@ -46,22 +54,39 @@ if (!file) {
     try {
       setLoading(true);
 
-      await axiosInstanceForExcel.post(
+      const response = await axiosInstanceForExcel.post(
         "/partner/add-sellers-using-file",
         formData
       );
 
-      toast.success("Excel uploaded successfully ✅");
+      const successMessage =
+        response?.data?.message || "Excel uploaded successfully ✅";
+
+      toast.success(successMessage);
+
       setFile(null);
-      setInputKey(Date.now()); // reset file input
+      setInputKey(Date.now());
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload Excel ❌");
-      setInputKey(Date.now()); // reset even on error
-    } finally {
+
+      const errorData = error?.response?.data;
+
+      setUploadError({
+        status: errorData?.status,
+        message: errorData?.message,
+        success: errorData?.success,
+        payload: errorData?.payload,
+      });
+
+      toast.error(errorData?.message || "Upload failed");
+
+      setInputKey(Date.now());
+    }
+    finally {
       setLoading(false);
     }
   };
+
 
   return (
     <Paper
@@ -125,6 +150,86 @@ if (!file) {
           Selected: {file.name}
         </Typography>
       )}
+
+      {uploadError && (
+        <Box
+          mt={3}
+          p={3}
+          sx={{
+            borderRadius: 3,
+            backgroundColor: "#FFF4F4",
+            border: "1px solid #FFCDD2",
+            textAlign: "left",
+          }}
+        >
+          <Typography
+            variant="subtitle1"
+            fontWeight={700}
+            color="error"
+            mb={1}
+          >
+            Upload Errors
+          </Typography>
+
+          {/* <Typography fontSize={14}>
+            <strong>Status:</strong> {uploadError.status}
+          </Typography> */}
+
+          <Typography fontSize={14}>
+            <strong>Message:</strong> {uploadError.message}
+          </Typography>
+
+          {/* <Typography fontSize={14}>
+            <strong>Success:</strong> {String(uploadError.success)}
+          </Typography> */}
+
+          {uploadError?.payload?.length > 0 && (
+            <Box mt={2}>
+              <Typography fontWeight={600} mb={1}>
+                Error Details
+              </Typography>
+
+              <Box
+                sx={{
+                  maxHeight: 300,
+                  overflowY: "auto",
+                  borderRadius: 2,
+                  border: "1px solid #E0E0E0",
+                }}
+              >
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: "14px",
+                  }}
+                >
+                  <thead>
+                    <tr style={{ background: "#F8F9FF" }}>
+                      <th style={thStyle}>#</th>
+                      <th style={thStyle}>Seller ID</th>
+                      <th style={thStyle}>Error Message</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {uploadError.payload.map((item, index) => (
+                      <tr key={index} style={{ borderTop: "1px solid #EEE" }}>
+                        <td style={tdStyle}>{index + 1}</td>
+                        <td style={tdStyle}>{item.sellerId}</td>
+                        <td style={{ ...tdStyle, color: "#D32F2F" }}>
+                          {item.errorMessage}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Box>
+            </Box>
+          )}
+
+        </Box>
+      )}
+
 
       {/* 📤 Submit */}
       <Box mt={3}>
